@@ -13,7 +13,10 @@ export function SignOutButton() {
   async function signOut() {
     setPending(true);
     try {
-      await fetch("/api/auth/logout", { method: "POST" });
+      const response = await fetch("/api/auth/logout", { method: "POST" });
+      if (!response.ok) {
+        return;
+      }
       clearUser();
       router.replace("/login");
       router.refresh();

@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { readApiError } from "@/lib/api/client";
 
 type AdminDashboardProps = {
   id: string;
@@ -49,14 +50,14 @@ export function AdminDashboard({ id, email, createdAt }: AdminDashboardProps) {
         body: JSON.stringify({ currentPassword, newPassword, confirmPassword }),
       });
 
-      const payload: unknown = await response.json().catch(() => null);
-      const error =
-        payload && typeof payload === "object" && "error" in payload && typeof payload.error === "string"
-          ? payload.error
-          : "Could not update password. Please try again.";
-
       if (!response.ok) {
-        setMessage({ type: "error", text: error });
+        setMessage({
+          type: "error",
+          text: await readApiError(
+            response,
+            "Could not update password. Please try again.",
+          ),
+        });
         return;
       }
 

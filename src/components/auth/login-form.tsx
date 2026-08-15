@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { readApiError } from "@/lib/api/client";
 
 export function LoginForm() {
   const router = useRouter();
@@ -22,9 +23,8 @@ export function LoginForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
-      const data = (await response.json().catch(() => ({}))) as { error?: string };
       if (!response.ok) {
-        setError(data.error ?? "Sign-in failed.");
+        setError(await readApiError(response, "Sign-in failed."));
         return;
       }
       router.replace("/dashboard");
@@ -43,7 +43,12 @@ export function LoginForm() {
         <h2 className="font-serif text-4xl tracking-tight text-foreground">Admin sign in</h2>
         <p className="mt-3 text-sm leading-6 text-muted-foreground">Enter your credentials to access the Aurelia workspace.</p>
       </div>
-      <form onSubmit={onSubmit} className="space-y-6">
+      <form
+        action="/api/auth/login"
+        method="post"
+        onSubmit={onSubmit}
+        className="space-y-6"
+      >
         <div className="space-y-2">
           <label htmlFor="email" className="text-sm font-medium text-foreground">Email address</label>
           <input id="email" name="email" type="email" autoComplete="username" required value={email} onChange={(event) => setEmail(event.target.value)} disabled={pending} placeholder="you@company.com" className="flex h-12 w-full rounded-lg border border-input bg-background px-4 text-sm text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:border-ring focus:ring-4 focus:ring-ring/10 disabled:cursor-not-allowed disabled:opacity-60" />

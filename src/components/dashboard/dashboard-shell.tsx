@@ -10,7 +10,7 @@ import {
   MessageSquareText,
   Menu,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { SignOutButton } from "@/components/auth/sign-out-button";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -49,12 +49,47 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
     description: "Manage Safetly content and admin settings.",
   };
 
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setSidebarOpen(false);
+    }, 0);
+    return () => window.clearTimeout(timeoutId);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!sidebarOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setSidebarOpen(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [sidebarOpen]);
+
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(249,115,22,0.12),_transparent_32%),radial-gradient(circle_at_top_right,_rgba(126,58,237,0.12),_transparent_28%),linear-gradient(to_bottom,_rgba(255,255,255,1),_rgba(250,250,250,1))]">
       <div className="mx-auto flex min-h-screen max-w-[1600px]">
+        {sidebarOpen ? (
+          <button
+            type="button"
+            aria-label="Close navigation menu"
+            className="fixed inset-0 z-30 bg-black/40 backdrop-blur-[2px] md:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
+        ) : null}
         <aside
           className={cn(
-            "fixed inset-y-0 left-0 z-40 w-72 border-r bg-background/95 p-4 backdrop-blur transition-transform md:static md:translate-x-0",
+            "fixed inset-y-0 left-0 z-40 w-72 border-r bg-background/95 p-4 backdrop-blur transition-transform duration-200 md:static md:translate-x-0",
             sidebarOpen ? "translate-x-0" : "-translate-x-full",
           )}
         >
@@ -87,6 +122,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
                 <Link
                   key={item.href}
                   href={item.href}
+                  onClick={() => setSidebarOpen(false)}
                   className={cn(
                     "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
                     active

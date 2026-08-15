@@ -1,8 +1,6 @@
-import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 
 export default function Loading() {
   return (
-    <DashboardShell>
       <div className="space-y-6 p-4 md:p-6">
         <div className="h-5 w-32 rounded-full bg-slate-100" />
         <div className="h-4 w-96 max-w-full rounded-full bg-slate-100" />
@@ -28,6 +26,5 @@ export default function Loading() {
           </div>
         </div>
       </div>
-    </DashboardShell>
   );
 }

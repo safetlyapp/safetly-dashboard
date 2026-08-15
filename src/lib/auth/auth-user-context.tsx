@@ -9,6 +9,7 @@ import {
   useMemo,
   useState,
 } from "react";
+import { readApiError } from "@/lib/api/client";
 
 export type AuthUser = {
   id: string;
@@ -42,7 +43,7 @@ async function fetchMe(): Promise<AuthUser | null> {
   }
 
   if (!response.ok) {
-    throw new Error("Failed to load authenticated user.");
+    throw new Error(await readApiError(response, "Failed to load authenticated user."));
   }
 
   const payload = (await response.json()) as { user?: AuthUser };
@@ -97,15 +98,19 @@ export function AuthUserProvider({ children }: PropsWithChildren) {
         setError(null);
       }
 
-    try {
-      const result = await getUserWithCache(forceRefresh);
-      setUser(result);
-    } catch {
-      setError("Could not load user information.");
-      setUser(null);
-    } finally {
-      setIsLoading(false);
-    }
+      try {
+        const result = await getUserWithCache(forceRefresh);
+        setUser(result);
+      } catch (error) {
+        setError(
+          error instanceof Error
+            ? error.message
+            : "Could not load user information.",
+        );
+        setUser(null);
+      } finally {
+        setIsLoading(false);
+      }
     },
     [],
   );
