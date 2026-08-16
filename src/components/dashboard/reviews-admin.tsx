@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -78,10 +78,6 @@ export function ReviewsAdmin({ initialReviews }: { initialReviews: ReviewRow[] }
   const [deleteTarget, setDeleteTarget] = useState<ReviewRow | null>(null);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    setReviews(initialReviews);
-  }, [initialReviews]);
 
   const editingReview = useMemo(
     () => reviews.find((review) => review.id === editingId) ?? null,

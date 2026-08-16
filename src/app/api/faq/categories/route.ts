@@ -1,4 +1,4 @@
-import { asc, eq, ne } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
 import { type NextRequest } from "next/server";
 import { db } from "@/db";
 import { faqCategories } from "@/db/schema";

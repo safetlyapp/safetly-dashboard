@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -92,10 +92,6 @@ export function PricingAdmin({ initialPlans }: { initialPlans: PricingPlanRow[] 
   const [deleteTarget, setDeleteTarget] = useState<PricingPlanRow | null>(null);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    setPlans(initialPlans);
-  }, [initialPlans]);
 
   const editingPlan = useMemo(
     () => plans.find((plan) => plan.id === editingId) ?? null,

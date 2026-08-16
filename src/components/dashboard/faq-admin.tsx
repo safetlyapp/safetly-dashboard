@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -93,28 +93,16 @@ export function FaqAdmin({
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    setCategories(initialCategories);
-  }, [initialCategories]);
-
-  useEffect(() => {
-    setItems(initialItems);
-  }, [initialItems]);
-
-  useEffect(() => {
-    if (!selectedCategoryId && categories[0]) {
-      setSelectedCategoryId(categories[0].id);
-    }
-  }, [categories, selectedCategoryId]);
+  const activeCategoryId = selectedCategoryId || (categories[0]?.id ?? "");
 
   const selectedCategory = useMemo(
-    () => categories.find((category) => category.id === selectedCategoryId) ?? null,
-    [categories, selectedCategoryId],
+    () => categories.find((category) => category.id === activeCategoryId) ?? null,
+    [activeCategoryId, categories],
   );
 
   const selectedItems = useMemo(
-    () => items.filter((item) => item.categoryId === selectedCategoryId),
-    [items, selectedCategoryId],
+    () => items.filter((item) => item.categoryId === activeCategoryId),
+    [activeCategoryId, items],
   );
 
   function openCategoryCreate() {
@@ -125,19 +113,7 @@ export function FaqAdmin({
     setCategoryOpen(true);
   }
 
-  function openCategoryEdit(category: FaqCategoryRow) {
-    setCategoryMode("edit");
-    setEditingCategoryId(category.id);
-    setCategoryForm({
-      title: category.title,
-      displayOrder: String(category.displayOrder),
-      isPublished: category.isPublished,
-    });
-    setError(null);
-    setCategoryOpen(true);
-  }
-
-  function openItemCreate(categoryId = selectedCategoryId) {
+  function openItemCreate(categoryId = activeCategoryId) {
     setItemMode("create");
     setEditingItemId(null);
     setItemForm({
@@ -202,7 +178,7 @@ export function FaqAdmin({
             ? [...current, category].sort((a, b) => a.displayOrder - b.displayOrder)
             : current.map((item) => (item.id === category.id ? category : item)),
         );
-        if (!selectedCategoryId || categoryMode === "create") {
+        if (!activeCategoryId || categoryMode === "create") {
           setSelectedCategoryId(category.id);
         }
       } else {
@@ -288,6 +264,13 @@ export function FaqAdmin({
       setItems((current) =>
         current.filter((item) => item.categoryId !== categoryDeleteTarget.id),
       );
+      setSelectedCategoryId((current) => {
+        if (current !== categoryDeleteTarget.id) return current;
+        const remainingCategories = categories.filter(
+          (category) => category.id !== categoryDeleteTarget.id,
+        );
+        return remainingCategories[0]?.id ?? "";
+      });
       setCategoryDeleteTarget(null);
       router.refresh();
     } catch {
@@ -385,7 +368,7 @@ export function FaqAdmin({
         </CardHeader>
         <CardContent className="space-y-2 p-4">
           {categories.map((category) => {
-            const active = category.id === selectedCategoryId;
+            const active = category.id === activeCategoryId;
             const itemCount = categoryCounts.get(category.id) ?? 0;
             return (
               <button
@@ -430,7 +413,7 @@ export function FaqAdmin({
             <Button
               onClick={() => openItemCreate()}
               className="bg-gradient-to-r from-orange-500 to-purple-600 text-white"
-              disabled={!selectedCategoryId}
+              disabled={!activeCategoryId}
             >
               New item
             </Button>

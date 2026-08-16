@@ -1,5 +1,5 @@
-import { asc, eq, ne } from "drizzle-orm";
-import { type NextRequest, NextResponse } from "next/server";
+import { asc, eq } from "drizzle-orm";
+import { type NextRequest } from "next/server";
 import { db } from "@/db";
 import { pricingPlans } from "@/db/schema";
 import { requireAdmin } from "@/lib/api/admin-auth";
