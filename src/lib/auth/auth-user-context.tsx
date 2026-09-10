@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   createContext,
@@ -8,8 +8,8 @@ import {
   useEffect,
   useMemo,
   useState,
-} from "react";
-import { readApiError } from "@/lib/api/client";
+} from 'react';
+import { readApiError } from '@/lib/api/client';
 
 export type AuthUser = {
   id: string;
@@ -32,10 +32,10 @@ let cachedAt = 0;
 let inFlightRequest: Promise<AuthUser | null> | null = null;
 
 async function fetchMe(): Promise<AuthUser | null> {
-  const response = await fetch("/api/auth/me", {
-    method: "GET",
-    credentials: "include",
-    cache: "no-store",
+  const response = await fetch('/api/auth/me', {
+    method: 'GET',
+    credentials: 'include',
+    cache: 'no-store',
   });
 
   if (response.status === 401) {
@@ -43,18 +43,22 @@ async function fetchMe(): Promise<AuthUser | null> {
   }
 
   if (!response.ok) {
-    throw new Error(await readApiError(response, "Failed to load authenticated user."));
+    throw new Error(
+      await readApiError(response, 'Failed to load authenticated user.')
+    );
   }
 
   const payload = (await response.json()) as { user?: AuthUser };
   if (!payload.user) {
-    throw new Error("Invalid user payload.");
+    throw new Error('Invalid user payload.');
   }
 
   return payload.user;
 }
 
-async function getUserWithCache(forceRefresh: boolean): Promise<AuthUser | null> {
+async function getUserWithCache(
+  forceRefresh: boolean
+): Promise<AuthUser | null> {
   const now = Date.now();
   const hasFreshCache = !forceRefresh && now - cachedAt < CACHE_TTL_MS;
 
@@ -105,14 +109,14 @@ export function AuthUserProvider({ children }: PropsWithChildren) {
         setError(
           error instanceof Error
             ? error.message
-            : "Could not load user information.",
+            : 'Could not load user information.'
         );
         setUser(null);
       } finally {
         setIsLoading(false);
       }
     },
-    [],
+    []
   );
 
   useEffect(() => {
@@ -142,16 +146,20 @@ export function AuthUserProvider({ children }: PropsWithChildren) {
       refreshUser,
       clearUser,
     }),
-    [user, isLoading, error, refreshUser, clearUser],
+    [user, isLoading, error, refreshUser, clearUser]
   );
 
-  return <AuthUserContext.Provider value={value}>{children}</AuthUserContext.Provider>;
+  return (
+    <AuthUserContext.Provider value={value}>
+      {children}
+    </AuthUserContext.Provider>
+  );
 }
 
 export function useAuthUser() {
   const context = useContext(AuthUserContext);
   if (!context) {
-    throw new Error("useAuthUser must be used within AuthUserProvider");
+    throw new Error('useAuthUser must be used within AuthUserProvider');
   }
   return context;
 }

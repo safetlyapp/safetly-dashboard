@@ -1,8 +1,8 @@
-import { and, asc, eq } from "drizzle-orm";
-import { type NextRequest } from "next/server";
-import { db } from "@/db";
-import { reviews, reviewStatusEnum } from "@/db/schema";
-import { requireAdmin } from "@/lib/api/admin-auth";
+import { and, asc, eq } from 'drizzle-orm';
+import { type NextRequest } from 'next/server';
+import { db } from '@/db';
+import { reviews, reviewStatusEnum } from '@/db/schema';
+import { requireAdmin } from '@/lib/api/admin-auth';
 import {
   badRequest,
   created,
@@ -11,13 +11,13 @@ import {
   parseInteger,
   parseString,
   readJsonObject,
-} from "@/lib/api/request";
+} from '@/lib/api/request';
 
 export async function GET() {
   const rows = await db()
     .select()
     .from(reviews)
-    .where(and(eq(reviews.status, "approved"), eq(reviews.isFeatured, true)))
+    .where(and(eq(reviews.status, 'approved'), eq(reviews.isFeatured, true)))
     .orderBy(asc(reviews.displayOrder), asc(reviews.reviewDate));
 
   return ok({ reviews: rows });
@@ -25,10 +25,10 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   const auth = await requireAdmin(request);
-  if ("response" in auth) return auth.response;
+  if ('response' in auth) return auth.response;
 
   const payload = await readJsonObject(request);
-  if ("response" in payload) return payload.response;
+  if ('response' in payload) return payload.response;
 
   const name = parseString(payload.body.name);
   const quote = parseString(payload.body.quote);
@@ -49,20 +49,20 @@ export async function POST(request: NextRequest) {
     isFeatured === null ||
     displayOrder === null
   ) {
-    return badRequest("All review fields are required and valid.");
+    return badRequest('All review fields are required and valid.');
   }
 
-  if (!["pending", "approved", "rejected"].includes(status)) {
-    return badRequest("status must be pending, approved, or rejected.");
+  if (!['pending', 'approved', 'rejected'].includes(status)) {
+    return badRequest('status must be pending, approved, or rejected.');
   }
 
   if (rating < 1 || rating > 5) {
-    return badRequest("rating must be between 1 and 5.");
+    return badRequest('rating must be between 1 and 5.');
   }
 
   const reviewDate = new Date(reviewDateRaw);
   if (Number.isNaN(reviewDate.getTime())) {
-    return badRequest("reviewDate must be a valid date string.");
+    return badRequest('reviewDate must be a valid date string.');
   }
 
   const [review] = await db()

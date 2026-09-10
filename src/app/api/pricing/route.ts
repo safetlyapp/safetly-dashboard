@@ -1,8 +1,8 @@
-import { asc, eq } from "drizzle-orm";
-import { type NextRequest } from "next/server";
-import { db } from "@/db";
-import { pricingPlans } from "@/db/schema";
-import { requireAdmin } from "@/lib/api/admin-auth";
+import { asc, eq } from 'drizzle-orm';
+import { type NextRequest } from 'next/server';
+import { db } from '@/db';
+import { pricingPlans } from '@/db/schema';
+import { requireAdmin } from '@/lib/api/admin-auth';
 import {
   badRequest,
   conflict,
@@ -15,7 +15,7 @@ import {
   parseString,
   parseStringArray,
   readJsonObject,
-} from "@/lib/api/request";
+} from '@/lib/api/request';
 
 export async function GET() {
   const plans = await db()
@@ -29,10 +29,10 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   const auth = await requireAdmin(request);
-  if ("response" in auth) return auth.response;
+  if ('response' in auth) return auth.response;
 
   const payload = await readJsonObject(request);
-  if ("response" in payload) return payload.response;
+  if ('response' in payload) return payload.response;
 
   const planId = parseString(payload.body.planId);
   const name = parseString(payload.body.name);
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
     displayOrder === null ||
     !features
   ) {
-    return badRequest("All pricing plan fields are required and valid.");
+    return badRequest('All pricing plan fields are required and valid.');
   }
 
   const [existing] = await db()
@@ -68,7 +68,8 @@ export async function POST(request: NextRequest) {
     .from(pricingPlans)
     .where(eq(pricingPlans.planId, planId))
     .limit(1);
-  if (existing) return conflict("A pricing plan with this planId already exists.");
+  if (existing)
+    return conflict('A pricing plan with this planId already exists.');
 
   const [plan] = await db()
     .insert(pricingPlans)

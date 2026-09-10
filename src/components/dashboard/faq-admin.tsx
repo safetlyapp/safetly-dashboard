@@ -1,17 +1,30 @@
-"use client";
+'use client';
 
-import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { RichTextEditor } from "@/components/dashboard/rich-text-editor";
-import { readApiError } from "@/lib/api/client";
+import { useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Dialog } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select } from '@/components/ui/select';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { RichTextEditor } from '@/components/dashboard/rich-text-editor';
+import { readApiError } from '@/lib/api/client';
 
 type FaqCategoryRow = {
   id: string;
@@ -44,23 +57,23 @@ type ItemFormState = {
 };
 
 const emptyCategoryForm: CategoryFormState = {
-  title: "",
-  displayOrder: "0",
+  title: '',
+  displayOrder: '0',
   isPublished: true,
 };
 
 const emptyItemForm: ItemFormState = {
-  categoryId: "",
-  question: "<p></p>",
-  answer: "<p></p>",
-  displayOrder: "0",
+  categoryId: '',
+  question: '<p></p>',
+  answer: '<p></p>',
+  displayOrder: '0',
   isPublished: true,
 };
 
 function stripHtml(html: string) {
   return html
-    .replace(/<[^>]+>/g, " ")
-    .replace(/\s+/g, " ")
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
     .trim();
 }
 
@@ -75,38 +88,45 @@ export function FaqAdmin({
   const [categories, setCategories] = useState(initialCategories);
   const [items, setItems] = useState(initialItems);
   const [selectedCategoryId, setSelectedCategoryId] = useState(
-    initialCategories[0]?.id ?? "",
+    initialCategories[0]?.id ?? ''
   );
 
   const [categoryOpen, setCategoryOpen] = useState(false);
-  const [categoryMode, setCategoryMode] = useState<"create" | "edit">("create");
-  const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
-  const [categoryForm, setCategoryForm] = useState<CategoryFormState>(emptyCategoryForm);
-  const [categoryDeleteTarget, setCategoryDeleteTarget] = useState<FaqCategoryRow | null>(null);
+  const [categoryMode, setCategoryMode] = useState<'create' | 'edit'>('create');
+  const [editingCategoryId, setEditingCategoryId] = useState<string | null>(
+    null
+  );
+  const [categoryForm, setCategoryForm] =
+    useState<CategoryFormState>(emptyCategoryForm);
+  const [categoryDeleteTarget, setCategoryDeleteTarget] =
+    useState<FaqCategoryRow | null>(null);
 
   const [itemOpen, setItemOpen] = useState(false);
-  const [itemMode, setItemMode] = useState<"create" | "edit">("create");
+  const [itemMode, setItemMode] = useState<'create' | 'edit'>('create');
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
   const [itemForm, setItemForm] = useState<ItemFormState>(emptyItemForm);
-  const [itemDeleteTarget, setItemDeleteTarget] = useState<FaqItemRow | null>(null);
+  const [itemDeleteTarget, setItemDeleteTarget] = useState<FaqItemRow | null>(
+    null
+  );
 
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const activeCategoryId = selectedCategoryId || (categories[0]?.id ?? "");
+  const activeCategoryId = selectedCategoryId || (categories[0]?.id ?? '');
 
   const selectedCategory = useMemo(
-    () => categories.find((category) => category.id === activeCategoryId) ?? null,
-    [activeCategoryId, categories],
+    () =>
+      categories.find((category) => category.id === activeCategoryId) ?? null,
+    [activeCategoryId, categories]
   );
 
   const selectedItems = useMemo(
     () => items.filter((item) => item.categoryId === activeCategoryId),
-    [activeCategoryId, items],
+    [activeCategoryId, items]
   );
 
   function openCategoryCreate() {
-    setCategoryMode("create");
+    setCategoryMode('create');
     setEditingCategoryId(null);
     setCategoryForm(emptyCategoryForm);
     setError(null);
@@ -114,7 +134,7 @@ export function FaqAdmin({
   }
 
   function openItemCreate(categoryId = activeCategoryId) {
-    setItemMode("create");
+    setItemMode('create');
     setEditingItemId(null);
     setItemForm({
       ...emptyItemForm,
@@ -125,7 +145,7 @@ export function FaqAdmin({
   }
 
   function openItemEdit(item: FaqItemRow) {
-    setItemMode("edit");
+    setItemMode('edit');
     setEditingItemId(item.id);
     setItemForm({
       categoryId: item.categoryId,
@@ -151,34 +171,36 @@ export function FaqAdmin({
 
     try {
       const response = await fetch(
-        categoryMode === "create"
-          ? "/api/faq/categories"
+        categoryMode === 'create'
+          ? '/api/faq/categories'
           : `/api/faq/categories/${editingCategoryId}`,
         {
-          method: categoryMode === "create" ? "POST" : "PATCH",
-          headers: { "Content-Type": "application/json" },
+          method: categoryMode === 'create' ? 'POST' : 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
-        },
+        }
       );
 
       if (!response.ok) {
-        setError(await readApiError(response, "Could not save category."));
+        setError(await readApiError(response, 'Could not save category.'));
         return;
       }
 
       const data: unknown = await response.json();
       const category =
-        data && typeof data === "object" && "category" in data
+        data && typeof data === 'object' && 'category' in data
           ? (data as { category?: FaqCategoryRow }).category
           : null;
 
       if (category) {
         setCategories((current) =>
-          categoryMode === "create"
-            ? [...current, category].sort((a, b) => a.displayOrder - b.displayOrder)
-            : current.map((item) => (item.id === category.id ? category : item)),
+          categoryMode === 'create'
+            ? [...current, category].sort(
+                (a, b) => a.displayOrder - b.displayOrder
+              )
+            : current.map((item) => (item.id === category.id ? category : item))
         );
-        if (!activeCategoryId || categoryMode === "create") {
+        if (!activeCategoryId || categoryMode === 'create') {
           setSelectedCategoryId(category.id);
         }
       } else {
@@ -187,7 +209,7 @@ export function FaqAdmin({
 
       setCategoryOpen(false);
     } catch {
-      setError("Network error while saving category.");
+      setError('Network error while saving category.');
     } finally {
       setPending(false);
     }
@@ -208,30 +230,32 @@ export function FaqAdmin({
 
     try {
       const response = await fetch(
-        itemMode === "create" ? "/api/faq/items" : `/api/faq/items/${editingItemId}`,
+        itemMode === 'create'
+          ? '/api/faq/items'
+          : `/api/faq/items/${editingItemId}`,
         {
-          method: itemMode === "create" ? "POST" : "PATCH",
-          headers: { "Content-Type": "application/json" },
+          method: itemMode === 'create' ? 'POST' : 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
-        },
+        }
       );
 
       if (!response.ok) {
-        setError(await readApiError(response, "Could not save FAQ item."));
+        setError(await readApiError(response, 'Could not save FAQ item.'));
         return;
       }
 
       const data: unknown = await response.json();
       const item =
-        data && typeof data === "object" && "item" in data
+        data && typeof data === 'object' && 'item' in data
           ? (data as { item?: FaqItemRow }).item
           : null;
 
       if (item) {
         setItems((current) =>
-          itemMode === "create"
+          itemMode === 'create'
             ? [...current, item].sort((a, b) => a.displayOrder - b.displayOrder)
-            : current.map((row) => (row.id === item.id ? item : row)),
+            : current.map((row) => (row.id === item.id ? item : row))
         );
         setSelectedCategoryId(item.categoryId);
       } else {
@@ -240,7 +264,7 @@ export function FaqAdmin({
 
       setItemOpen(false);
     } catch {
-      setError("Network error while saving FAQ item.");
+      setError('Network error while saving FAQ item.');
     } finally {
       setPending(false);
     }
@@ -251,30 +275,33 @@ export function FaqAdmin({
     setPending(true);
     setError(null);
     try {
-      const response = await fetch(`/api/faq/categories/${categoryDeleteTarget.id}`, {
-        method: "DELETE",
-      });
+      const response = await fetch(
+        `/api/faq/categories/${categoryDeleteTarget.id}`,
+        {
+          method: 'DELETE',
+        }
+      );
       if (!response.ok && response.status !== 204) {
-        setError(await readApiError(response, "Could not delete category."));
+        setError(await readApiError(response, 'Could not delete category.'));
         return;
       }
       setCategories((current) =>
-        current.filter((category) => category.id !== categoryDeleteTarget.id),
+        current.filter((category) => category.id !== categoryDeleteTarget.id)
       );
       setItems((current) =>
-        current.filter((item) => item.categoryId !== categoryDeleteTarget.id),
+        current.filter((item) => item.categoryId !== categoryDeleteTarget.id)
       );
       setSelectedCategoryId((current) => {
         if (current !== categoryDeleteTarget.id) return current;
         const remainingCategories = categories.filter(
-          (category) => category.id !== categoryDeleteTarget.id,
+          (category) => category.id !== categoryDeleteTarget.id
         );
-        return remainingCategories[0]?.id ?? "";
+        return remainingCategories[0]?.id ?? '';
       });
       setCategoryDeleteTarget(null);
       router.refresh();
     } catch {
-      setError("Network error while deleting category.");
+      setError('Network error while deleting category.');
     } finally {
       setPending(false);
     }
@@ -286,17 +313,19 @@ export function FaqAdmin({
     setError(null);
     try {
       const response = await fetch(`/api/faq/items/${itemDeleteTarget.id}`, {
-        method: "DELETE",
+        method: 'DELETE',
       });
       if (!response.ok && response.status !== 204) {
-        setError(await readApiError(response, "Could not delete FAQ item."));
+        setError(await readApiError(response, 'Could not delete FAQ item.'));
         return;
       }
-      setItems((current) => current.filter((item) => item.id !== itemDeleteTarget.id));
+      setItems((current) =>
+        current.filter((item) => item.id !== itemDeleteTarget.id)
+      );
       setItemDeleteTarget(null);
       router.refresh();
     } catch {
-      setError("Network error while deleting FAQ item.");
+      setError('Network error while deleting FAQ item.');
     } finally {
       setPending(false);
     }
@@ -307,33 +336,35 @@ export function FaqAdmin({
     setError(null);
     try {
       const response = await fetch(`/api/faq/items/${item.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ isPublished: !item.isPublished }),
       });
       if (!response.ok) {
-        setError(await readApiError(response, "Could not update FAQ item."));
+        setError(await readApiError(response, 'Could not update FAQ item.'));
         return;
       }
       const data: unknown = await response.json();
       const updated =
-        data && typeof data === "object" && "item" in data
+        data && typeof data === 'object' && 'item' in data
           ? (data as { item?: FaqItemRow }).item
           : null;
       if (updated) {
         setItems((current) =>
-          current.map((row) => (row.id === updated.id ? updated : row)),
+          current.map((row) => (row.id === updated.id ? updated : row))
         );
       } else {
         setItems((current) =>
           current.map((row) =>
-            row.id === item.id ? { ...row, isPublished: !item.isPublished } : row,
-          ),
+            row.id === item.id
+              ? { ...row, isPublished: !item.isPublished }
+              : row
+          )
         );
       }
       router.refresh();
     } catch {
-      setError("Network error while updating FAQ item.");
+      setError('Network error while updating FAQ item.');
     } finally {
       setPending(false);
     }
@@ -344,7 +375,7 @@ export function FaqAdmin({
       categories.map((category) => [
         category.id,
         items.filter((item) => item.categoryId === category.id).length,
-      ]),
+      ])
     );
   }, [categories, items]);
 
@@ -355,7 +386,9 @@ export function FaqAdmin({
           <div className="flex items-center justify-between gap-3">
             <div>
               <CardTitle className="text-xl">FAQ Categories</CardTitle>
-              <CardDescription>Organize the public FAQ by topic.</CardDescription>
+              <CardDescription>
+                Organize the public FAQ by topic.
+              </CardDescription>
             </div>
             <Button
               size="sm"
@@ -378,19 +411,22 @@ export function FaqAdmin({
                 className={
                   `w-full rounded-xl border px-4 py-3 text-left transition-colors ` +
                   (active
-                    ? "border-purple-300 bg-purple-50 shadow-sm"
-                    : "hover:bg-muted/60")
+                    ? 'border-purple-300 bg-purple-50 shadow-sm'
+                    : 'hover:bg-muted/60')
                 }
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="font-medium">{category.title}</p>
                     <p className="text-xs text-muted-foreground">
-                      {itemCount} item{itemCount === 1 ? "" : "s"} · order {category.displayOrder}
+                      {itemCount} item{itemCount === 1 ? '' : 's'} · order{' '}
+                      {category.displayOrder}
                     </p>
                   </div>
-                  <Badge variant={category.isPublished ? "success" : "secondary"}>
-                    {category.isPublished ? "Published" : "Hidden"}
+                  <Badge
+                    variant={category.isPublished ? 'success' : 'secondary'}
+                  >
+                    {category.isPublished ? 'Published' : 'Hidden'}
                   </Badge>
                 </div>
               </button>
@@ -404,7 +440,7 @@ export function FaqAdmin({
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
               <CardTitle className="text-xl">
-                {selectedCategory?.title ?? "FAQ Items"}
+                {selectedCategory?.title ?? 'FAQ Items'}
               </CardTitle>
               <CardDescription>
                 Manage the questions and answers for the selected category.
@@ -444,14 +480,18 @@ export function FaqAdmin({
                     </p>
                   </TableCell>
                   <TableCell>
-                    <Badge variant={item.isPublished ? "success" : "secondary"}>
-                      {item.isPublished ? "Published" : "Hidden"}
+                    <Badge variant={item.isPublished ? 'success' : 'secondary'}>
+                      {item.isPublished ? 'Published' : 'Hidden'}
                     </Badge>
                   </TableCell>
                   <TableCell>{item.displayOrder}</TableCell>
                   <TableCell className="text-right">
                     <div className="inline-flex flex-wrap justify-end gap-2">
-                      <Button size="sm" variant="outline" onClick={() => openItemEdit(item)}>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => openItemEdit(item)}
+                      >
                         Edit
                       </Button>
                       <Button
@@ -460,7 +500,7 @@ export function FaqAdmin({
                         onClick={() => toggleItemPublished(item)}
                         disabled={pending}
                       >
-                        {item.isPublished ? "Unpublish" : "Publish"}
+                        {item.isPublished ? 'Unpublish' : 'Publish'}
                       </Button>
                       <Button
                         size="sm"
@@ -481,15 +521,23 @@ export function FaqAdmin({
       <Dialog
         open={categoryOpen}
         onOpenChange={setCategoryOpen}
-        title={categoryMode === "create" ? "Create FAQ category" : "Edit FAQ category"}
+        title={
+          categoryMode === 'create'
+            ? 'Create FAQ category'
+            : 'Edit FAQ category'
+        }
         description={
-          categoryMode === "create"
-            ? "Add a new top-level FAQ group."
-            : `Editing ${categories.find((category) => category.id === editingCategoryId)?.title ?? "category"}`
+          categoryMode === 'create'
+            ? 'Add a new top-level FAQ group.'
+            : `Editing ${categories.find((category) => category.id === editingCategoryId)?.title ?? 'category'}`
         }
         footer={
           <div className="flex items-center justify-end gap-2">
-            <Button type="button" variant="outline" onClick={() => setCategoryOpen(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setCategoryOpen(false)}
+            >
               Cancel
             </Button>
             <Button
@@ -498,12 +546,16 @@ export function FaqAdmin({
               className="bg-gradient-to-r from-purple-600 to-orange-500 text-white"
               disabled={pending}
             >
-              {pending ? "Saving..." : "Save category"}
+              {pending ? 'Saving...' : 'Save category'}
             </Button>
           </div>
         }
       >
-        <form id="category-form" className="grid gap-4" onSubmit={submitCategory}>
+        <form
+          id="category-form"
+          className="grid gap-4"
+          onSubmit={submitCategory}
+        >
           {error ? (
             <p className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
               {error}
@@ -515,7 +567,10 @@ export function FaqAdmin({
               id="category-title"
               value={categoryForm.title}
               onChange={(event) =>
-                setCategoryForm((current) => ({ ...current, title: event.target.value }))
+                setCategoryForm((current) => ({
+                  ...current,
+                  title: event.target.value,
+                }))
               }
               required
             />
@@ -527,7 +582,10 @@ export function FaqAdmin({
               type="number"
               value={categoryForm.displayOrder}
               onChange={(event) =>
-                setCategoryForm((current) => ({ ...current, displayOrder: event.target.value }))
+                setCategoryForm((current) => ({
+                  ...current,
+                  displayOrder: event.target.value,
+                }))
               }
             />
           </div>
@@ -536,7 +594,10 @@ export function FaqAdmin({
               type="checkbox"
               checked={categoryForm.isPublished}
               onChange={(event) =>
-                setCategoryForm((current) => ({ ...current, isPublished: event.target.checked }))
+                setCategoryForm((current) => ({
+                  ...current,
+                  isPublished: event.target.checked,
+                }))
               }
               className="h-4 w-4 accent-purple-600"
             />
@@ -548,15 +609,19 @@ export function FaqAdmin({
       <Dialog
         open={itemOpen}
         onOpenChange={setItemOpen}
-        title={itemMode === "create" ? "Create FAQ item" : "Edit FAQ item"}
+        title={itemMode === 'create' ? 'Create FAQ item' : 'Edit FAQ item'}
         description={
-          itemMode === "create"
-            ? "Add a question and answer with rich text."
-            : "Edit the selected FAQ item."
+          itemMode === 'create'
+            ? 'Add a question and answer with rich text.'
+            : 'Edit the selected FAQ item.'
         }
         footer={
           <div className="flex items-center justify-end gap-2">
-            <Button type="button" variant="outline" onClick={() => setItemOpen(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setItemOpen(false)}
+            >
               Cancel
             </Button>
             <Button
@@ -565,7 +630,7 @@ export function FaqAdmin({
               className="bg-gradient-to-r from-orange-500 to-purple-600 text-white"
               disabled={pending}
             >
-              {pending ? "Saving..." : "Save item"}
+              {pending ? 'Saving...' : 'Save item'}
             </Button>
           </div>
         }
@@ -583,7 +648,10 @@ export function FaqAdmin({
               id="item-category"
               value={itemForm.categoryId}
               onChange={(event) =>
-                setItemForm((current) => ({ ...current, categoryId: event.target.value }))
+                setItemForm((current) => ({
+                  ...current,
+                  categoryId: event.target.value,
+                }))
               }
             >
               <option value="">Select a category</option>
@@ -598,14 +666,18 @@ export function FaqAdmin({
           <RichTextEditor
             label="Question"
             value={itemForm.question}
-            onChange={(value) => setItemForm((current) => ({ ...current, question: value }))}
+            onChange={(value) =>
+              setItemForm((current) => ({ ...current, question: value }))
+            }
             placeholder="Question content"
           />
 
           <RichTextEditor
             label="Answer"
             value={itemForm.answer}
-            onChange={(value) => setItemForm((current) => ({ ...current, answer: value }))}
+            onChange={(value) =>
+              setItemForm((current) => ({ ...current, answer: value }))
+            }
             placeholder="Answer content"
           />
 
@@ -617,7 +689,10 @@ export function FaqAdmin({
                 type="number"
                 value={itemForm.displayOrder}
                 onChange={(event) =>
-                  setItemForm((current) => ({ ...current, displayOrder: event.target.value }))
+                  setItemForm((current) => ({
+                    ...current,
+                    displayOrder: event.target.value,
+                  }))
                 }
               />
             </div>
@@ -626,7 +701,10 @@ export function FaqAdmin({
                 type="checkbox"
                 checked={itemForm.isPublished}
                 onChange={(event) =>
-                  setItemForm((current) => ({ ...current, isPublished: event.target.checked }))
+                  setItemForm((current) => ({
+                    ...current,
+                    isPublished: event.target.checked,
+                  }))
                 }
                 className="h-4 w-4 accent-orange-500"
               />
@@ -647,17 +725,25 @@ export function FaqAdmin({
         }
         footer={
           <div className="flex items-center justify-end gap-2">
-            <Button variant="outline" onClick={() => setCategoryDeleteTarget(null)}>
+            <Button
+              variant="outline"
+              onClick={() => setCategoryDeleteTarget(null)}
+            >
               Cancel
             </Button>
-            <Button variant="destructive" onClick={deleteCategory} disabled={pending}>
-              {pending ? "Deleting..." : "Delete"}
+            <Button
+              variant="destructive"
+              onClick={deleteCategory}
+              disabled={pending}
+            >
+              {pending ? 'Deleting...' : 'Delete'}
             </Button>
           </div>
         }
       >
         <p className="text-sm text-muted-foreground">
-          Cascading delete is enabled, so all nested FAQ items will be removed too.
+          Cascading delete is enabled, so all nested FAQ items will be removed
+          too.
         </p>
       </Dialog>
 
@@ -675,8 +761,12 @@ export function FaqAdmin({
             <Button variant="outline" onClick={() => setItemDeleteTarget(null)}>
               Cancel
             </Button>
-            <Button variant="destructive" onClick={deleteItem} disabled={pending}>
-              {pending ? "Deleting..." : "Delete"}
+            <Button
+              variant="destructive"
+              onClick={deleteItem}
+              disabled={pending}
+            >
+              {pending ? 'Deleting...' : 'Delete'}
             </Button>
           </div>
         }

@@ -1,10 +1,10 @@
-import { eq } from "drizzle-orm";
-import { type NextRequest, NextResponse } from "next/server";
-import { db } from "@/db";
-import { admins } from "@/db/schema";
-import { clearSessionCookie, SESSION_COOKIE_NAME } from "@/lib/auth/constants";
-import { getSession } from "@/lib/auth/session";
-import { verifySessionToken } from "@/lib/auth/jwt";
+import { eq } from 'drizzle-orm';
+import { type NextRequest, NextResponse } from 'next/server';
+import { db } from '@/db';
+import { admins } from '@/db/schema';
+import { clearSessionCookie, SESSION_COOKIE_NAME } from '@/lib/auth/constants';
+import { getSession } from '@/lib/auth/session';
+import { verifySessionToken } from '@/lib/auth/jwt';
 
 export type AuthenticatedAdmin = {
   id: string;
@@ -12,11 +12,11 @@ export type AuthenticatedAdmin = {
 };
 
 export async function requireAdmin(
-  request: NextRequest,
+  request: NextRequest
 ): Promise<{ admin: AuthenticatedAdmin } | { response: NextResponse }> {
-  const authorization = request.headers.get("authorization");
-  const bearerToken = authorization?.startsWith("Bearer ")
-    ? authorization.slice("Bearer ".length).trim()
+  const authorization = request.headers.get('authorization');
+  const bearerToken = authorization?.startsWith('Bearer ')
+    ? authorization.slice('Bearer '.length).trim()
     : null;
 
   const session = bearerToken
@@ -25,10 +25,10 @@ export async function requireAdmin(
 
   if (!session) {
     const response = NextResponse.json(
-      { error: "Unauthorized." },
-      { status: 401 },
+      { error: 'Unauthorized.' },
+      { status: 401 }
     );
-    response.cookies.set(SESSION_COOKIE_NAME, "", clearSessionCookie());
+    response.cookies.set(SESSION_COOKIE_NAME, '', clearSessionCookie());
     return { response };
   }
 
@@ -43,10 +43,10 @@ export async function requireAdmin(
 
   if (!admin) {
     const response = NextResponse.json(
-      { error: "Unauthorized." },
-      { status: 401 },
+      { error: 'Unauthorized.' },
+      { status: 401 }
     );
-    response.cookies.set(SESSION_COOKIE_NAME, "", clearSessionCookie());
+    response.cookies.set(SESSION_COOKIE_NAME, '', clearSessionCookie());
     return { response };
   }
 

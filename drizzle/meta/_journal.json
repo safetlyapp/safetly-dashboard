@@ -8,6 +8,41 @@
       "when": 1786728659684,
       "tag": "0000_spotty_genesis",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1788892066621,
+      "tag": "0001_fine_naoko",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1788903543854,
+      "tag": "0002_messy_microbe",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1788941393572,
+      "tag": "0003_dapper_mindworm",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1788992646339,
+      "tag": "0004_safe_hulk",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1788994913451,
+      "tag": "0005_daily_onslaught",
+      "breakpoints": true
     }
   ]
 }

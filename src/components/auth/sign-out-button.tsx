@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { useAuthUser } from "@/lib/auth/auth-user-context";
-import { Button } from "@/components/ui/button";
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { useAuthUser } from '@/lib/auth/auth-user-context';
+import { Button } from '@/components/ui/button';
 
 export function SignOutButton() {
   const router = useRouter();
@@ -13,12 +13,12 @@ export function SignOutButton() {
   async function signOut() {
     setPending(true);
     try {
-      const response = await fetch("/api/auth/logout", { method: "POST" });
+      const response = await fetch('/api/auth/logout', { method: 'POST' });
       if (!response.ok) {
         return;
       }
       clearUser();
-      router.replace("/login");
+      router.replace('/login');
       router.refresh();
     } finally {
       setPending(false);
@@ -32,7 +32,7 @@ export function SignOutButton() {
       onClick={signOut}
       disabled={pending}
     >
-      {pending ? "Signing out…" : "Sign out"}
+      {pending ? 'Signing out…' : 'Sign out'}
     </Button>
   );
 }

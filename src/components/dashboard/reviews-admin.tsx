@@ -1,17 +1,30 @@
-"use client";
+'use client';
 
-import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Textarea } from "@/components/ui/textarea";
-import { readApiError } from "@/lib/api/client";
+import { useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Dialog } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select } from '@/components/ui/select';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Textarea } from '@/components/ui/textarea';
+import { readApiError } from '@/lib/api/client';
 
 type ReviewRow = {
   id: string;
@@ -20,7 +33,7 @@ type ReviewRow = {
   rating: number;
   reviewDate: string;
   initials: string;
-  status: "pending" | "approved" | "rejected";
+  status: 'pending' | 'approved' | 'rejected';
   isFeatured: boolean;
   displayOrder: number;
 };
@@ -31,25 +44,25 @@ type ReviewFormState = {
   rating: string;
   reviewDate: string;
   initials: string;
-  status: "pending" | "approved" | "rejected";
+  status: 'pending' | 'approved' | 'rejected';
   isFeatured: boolean;
   displayOrder: string;
 };
 
 const emptyForm: ReviewFormState = {
-  name: "",
-  quote: "",
-  rating: "5",
-  reviewDate: "",
-  initials: "",
-  status: "pending",
+  name: '',
+  quote: '',
+  rating: '5',
+  reviewDate: '',
+  initials: '',
+  status: 'pending',
   isFeatured: true,
-  displayOrder: "0",
+  displayOrder: '0',
 };
 
 function toDatetimeLocal(value: string) {
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "";
+  if (Number.isNaN(date.getTime())) return '';
   const offset = date.getTimezoneOffset();
   const local = new Date(date.getTime() - offset * 60_000);
   return local.toISOString().slice(0, 16);
@@ -68,11 +81,15 @@ function formFromReview(review: ReviewRow): ReviewFormState {
   };
 }
 
-export function ReviewsAdmin({ initialReviews }: { initialReviews: ReviewRow[] }) {
+export function ReviewsAdmin({
+  initialReviews,
+}: {
+  initialReviews: ReviewRow[];
+}) {
   const router = useRouter();
   const [reviews, setReviews] = useState(initialReviews);
   const [open, setOpen] = useState(false);
-  const [mode, setMode] = useState<"create" | "edit">("create");
+  const [mode, setMode] = useState<'create' | 'edit'>('create');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<ReviewFormState>(emptyForm);
   const [deleteTarget, setDeleteTarget] = useState<ReviewRow | null>(null);
@@ -81,11 +98,11 @@ export function ReviewsAdmin({ initialReviews }: { initialReviews: ReviewRow[] }
 
   const editingReview = useMemo(
     () => reviews.find((review) => review.id === editingId) ?? null,
-    [editingId, reviews],
+    [editingId, reviews]
   );
 
   function openCreate() {
-    setMode("create");
+    setMode('create');
     setEditingId(null);
     setForm(emptyForm);
     setError(null);
@@ -93,7 +110,7 @@ export function ReviewsAdmin({ initialReviews }: { initialReviews: ReviewRow[] }
   }
 
   function openEdit(review: ReviewRow) {
-    setMode("edit");
+    setMode('edit');
     setEditingId(review.id);
     setForm(formFromReview(review));
     setError(null);
@@ -117,28 +134,33 @@ export function ReviewsAdmin({ initialReviews }: { initialReviews: ReviewRow[] }
     };
 
     try {
-      const response = await fetch(mode === "create" ? "/api/reviews" : `/api/reviews/${editingId}`, {
-        method: mode === "create" ? "POST" : "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      const response = await fetch(
+        mode === 'create' ? '/api/reviews' : `/api/reviews/${editingId}`,
+        {
+          method: mode === 'create' ? 'POST' : 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        }
+      );
 
       if (!response.ok) {
-        setError(await readApiError(response, "Could not save review."));
+        setError(await readApiError(response, 'Could not save review.'));
         return;
       }
 
       const data: unknown = await response.json();
       const review =
-        data && typeof data === "object" && "review" in data
+        data && typeof data === 'object' && 'review' in data
           ? (data as { review?: ReviewRow }).review
           : null;
 
       if (review) {
         setReviews((current) =>
-          mode === "create"
-            ? [...current, review].sort((a, b) => a.displayOrder - b.displayOrder)
-            : current.map((item) => (item.id === review.id ? review : item)),
+          mode === 'create'
+            ? [...current, review].sort(
+                (a, b) => a.displayOrder - b.displayOrder
+              )
+            : current.map((item) => (item.id === review.id ? review : item))
         );
       } else {
         router.refresh();
@@ -148,7 +170,7 @@ export function ReviewsAdmin({ initialReviews }: { initialReviews: ReviewRow[] }
       setForm(emptyForm);
       setEditingId(null);
     } catch {
-      setError("Network error while saving review.");
+      setError('Network error while saving review.');
     } finally {
       setPending(false);
     }
@@ -159,26 +181,28 @@ export function ReviewsAdmin({ initialReviews }: { initialReviews: ReviewRow[] }
     setError(null);
     try {
       const response = await fetch(`/api/reviews/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(patch),
       });
       if (!response.ok) {
-        setError(await readApiError(response, "Could not update review."));
+        setError(await readApiError(response, 'Could not update review.'));
         return;
       }
       const data: unknown = await response.json();
       const review =
-        data && typeof data === "object" && "review" in data
+        data && typeof data === 'object' && 'review' in data
           ? (data as { review?: ReviewRow }).review
           : null;
       if (review) {
-        setReviews((current) => current.map((item) => (item.id === review.id ? review : item)));
+        setReviews((current) =>
+          current.map((item) => (item.id === review.id ? review : item))
+        );
       } else {
         router.refresh();
       }
     } catch {
-      setError("Network error while updating review.");
+      setError('Network error while updating review.');
     } finally {
       setPending(false);
     }
@@ -190,17 +214,19 @@ export function ReviewsAdmin({ initialReviews }: { initialReviews: ReviewRow[] }
     setError(null);
     try {
       const response = await fetch(`/api/reviews/${deleteTarget.id}`, {
-        method: "DELETE",
+        method: 'DELETE',
       });
       if (!response.ok && response.status !== 204) {
-        setError(await readApiError(response, "Could not delete review."));
+        setError(await readApiError(response, 'Could not delete review.'));
         return;
       }
-      setReviews((current) => current.filter((item) => item.id !== deleteTarget.id));
+      setReviews((current) =>
+        current.filter((item) => item.id !== deleteTarget.id)
+      );
       setDeleteTarget(null);
       router.refresh();
     } catch {
-      setError("Network error while deleting review.");
+      setError('Network error while deleting review.');
     } finally {
       setPending(false);
     }
@@ -217,7 +243,10 @@ export function ReviewsAdmin({ initialReviews }: { initialReviews: ReviewRow[] }
                 Moderate testimonials and control homepage highlights.
               </CardDescription>
             </div>
-            <Button onClick={openCreate} className="bg-gradient-to-r from-purple-600 to-orange-500 text-white">
+            <Button
+              onClick={openCreate}
+              className="bg-gradient-to-r from-purple-600 to-orange-500 text-white"
+            >
               New review
             </Button>
           </div>
@@ -263,11 +292,11 @@ export function ReviewsAdmin({ initialReviews }: { initialReviews: ReviewRow[] }
                   <TableCell>
                     <Badge
                       variant={
-                        review.status === "approved"
-                          ? "success"
-                          : review.status === "rejected"
-                            ? "destructive"
-                            : "warning"
+                        review.status === 'approved'
+                          ? 'success'
+                          : review.status === 'rejected'
+                            ? 'destructive'
+                            : 'warning'
                       }
                     >
                       {review.status}
@@ -275,8 +304,10 @@ export function ReviewsAdmin({ initialReviews }: { initialReviews: ReviewRow[] }
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-wrap gap-2">
-                      <Badge variant={review.isFeatured ? "default" : "secondary"}>
-                        {review.isFeatured ? "Featured" : "Hidden"}
+                      <Badge
+                        variant={review.isFeatured ? 'default' : 'secondary'}
+                      >
+                        {review.isFeatured ? 'Featured' : 'Hidden'}
                       </Badge>
                     </div>
                   </TableCell>
@@ -286,7 +317,9 @@ export function ReviewsAdmin({ initialReviews }: { initialReviews: ReviewRow[] }
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => patchReview(review.id, { status: "approved" })}
+                        onClick={() =>
+                          patchReview(review.id, { status: 'approved' })
+                        }
                         disabled={pending}
                       >
                         Approve
@@ -294,7 +327,9 @@ export function ReviewsAdmin({ initialReviews }: { initialReviews: ReviewRow[] }
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => patchReview(review.id, { status: "rejected" })}
+                        onClick={() =>
+                          patchReview(review.id, { status: 'rejected' })
+                        }
                         disabled={pending}
                       >
                         Reject
@@ -302,12 +337,20 @@ export function ReviewsAdmin({ initialReviews }: { initialReviews: ReviewRow[] }
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => patchReview(review.id, { isFeatured: !review.isFeatured })}
+                        onClick={() =>
+                          patchReview(review.id, {
+                            isFeatured: !review.isFeatured,
+                          })
+                        }
                         disabled={pending}
                       >
-                        {review.isFeatured ? "Unfeature" : "Feature"}
+                        {review.isFeatured ? 'Unfeature' : 'Feature'}
                       </Button>
-                      <Button size="sm" variant="outline" onClick={() => openEdit(review)}>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => openEdit(review)}
+                      >
                         Edit
                       </Button>
                       <Button
@@ -329,15 +372,19 @@ export function ReviewsAdmin({ initialReviews }: { initialReviews: ReviewRow[] }
       <Dialog
         open={open}
         onOpenChange={setOpen}
-        title={mode === "create" ? "Create review" : "Edit review"}
+        title={mode === 'create' ? 'Create review' : 'Edit review'}
         description={
-          mode === "create"
-            ? "Add a new customer testimonial."
-            : `Editing ${editingReview?.name ?? "review"}`
+          mode === 'create'
+            ? 'Add a new customer testimonial.'
+            : `Editing ${editingReview?.name ?? 'review'}`
         }
         footer={
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setOpen(false)}
+            >
               Cancel
             </Button>
             <Button
@@ -346,12 +393,16 @@ export function ReviewsAdmin({ initialReviews }: { initialReviews: ReviewRow[] }
               className="bg-gradient-to-r from-purple-600 to-orange-500 text-white"
               disabled={pending}
             >
-              {pending ? "Saving..." : "Save review"}
+              {pending ? 'Saving...' : 'Save review'}
             </Button>
           </div>
         }
       >
-        <form id="review-form" className="grid gap-4 md:grid-cols-2" onSubmit={submitForm}>
+        <form
+          id="review-form"
+          className="grid gap-4 md:grid-cols-2"
+          onSubmit={submitForm}
+        >
           {error ? (
             <p className="md:col-span-2 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
               {error}
@@ -363,7 +414,9 @@ export function ReviewsAdmin({ initialReviews }: { initialReviews: ReviewRow[] }
             <Input
               id="review-name"
               value={form.name}
-              onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
+              onChange={(event) =>
+                setForm((current) => ({ ...current, name: event.target.value }))
+              }
               required
             />
           </div>
@@ -372,7 +425,12 @@ export function ReviewsAdmin({ initialReviews }: { initialReviews: ReviewRow[] }
             <Input
               id="review-initials"
               value={form.initials}
-              onChange={(event) => setForm((current) => ({ ...current, initials: event.target.value }))}
+              onChange={(event) =>
+                setForm((current) => ({
+                  ...current,
+                  initials: event.target.value,
+                }))
+              }
               placeholder="TA"
               required
             />
@@ -385,7 +443,12 @@ export function ReviewsAdmin({ initialReviews }: { initialReviews: ReviewRow[] }
               min={1}
               max={5}
               value={form.rating}
-              onChange={(event) => setForm((current) => ({ ...current, rating: event.target.value }))}
+              onChange={(event) =>
+                setForm((current) => ({
+                  ...current,
+                  rating: event.target.value,
+                }))
+              }
               required
             />
           </div>
@@ -396,7 +459,10 @@ export function ReviewsAdmin({ initialReviews }: { initialReviews: ReviewRow[] }
               type="datetime-local"
               value={form.reviewDate}
               onChange={(event) =>
-                setForm((current) => ({ ...current, reviewDate: event.target.value }))
+                setForm((current) => ({
+                  ...current,
+                  reviewDate: event.target.value,
+                }))
               }
               required
             />
@@ -407,7 +473,12 @@ export function ReviewsAdmin({ initialReviews }: { initialReviews: ReviewRow[] }
               id="review-quote"
               rows={6}
               value={form.quote}
-              onChange={(event) => setForm((current) => ({ ...current, quote: event.target.value }))}
+              onChange={(event) =>
+                setForm((current) => ({
+                  ...current,
+                  quote: event.target.value,
+                }))
+              }
               required
             />
           </div>
@@ -419,7 +490,7 @@ export function ReviewsAdmin({ initialReviews }: { initialReviews: ReviewRow[] }
               onChange={(event) =>
                 setForm((current) => ({
                   ...current,
-                  status: event.target.value as ReviewFormState["status"],
+                  status: event.target.value as ReviewFormState['status'],
                 }))
               }
             >
@@ -435,7 +506,10 @@ export function ReviewsAdmin({ initialReviews }: { initialReviews: ReviewRow[] }
               type="number"
               value={form.displayOrder}
               onChange={(event) =>
-                setForm((current) => ({ ...current, displayOrder: event.target.value }))
+                setForm((current) => ({
+                  ...current,
+                  displayOrder: event.target.value,
+                }))
               }
             />
           </div>
@@ -445,7 +519,10 @@ export function ReviewsAdmin({ initialReviews }: { initialReviews: ReviewRow[] }
                 type="checkbox"
                 checked={form.isFeatured}
                 onChange={(event) =>
-                  setForm((current) => ({ ...current, isFeatured: event.target.checked }))
+                  setForm((current) => ({
+                    ...current,
+                    isFeatured: event.target.checked,
+                  }))
                 }
                 className="h-4 w-4 accent-purple-600"
               />
@@ -460,21 +537,28 @@ export function ReviewsAdmin({ initialReviews }: { initialReviews: ReviewRow[] }
         onOpenChange={(value) => !value && setDeleteTarget(null)}
         title="Delete review"
         description={
-          deleteTarget ? `This will permanently remove ${deleteTarget.name}.` : undefined
+          deleteTarget
+            ? `This will permanently remove ${deleteTarget.name}.`
+            : undefined
         }
         footer={
           <div className="flex items-center justify-end gap-2">
             <Button variant="outline" onClick={() => setDeleteTarget(null)}>
               Cancel
             </Button>
-            <Button variant="destructive" onClick={deleteReview} disabled={pending}>
-              {pending ? "Deleting..." : "Delete"}
+            <Button
+              variant="destructive"
+              onClick={deleteReview}
+              disabled={pending}
+            >
+              {pending ? 'Deleting...' : 'Delete'}
             </Button>
           </div>
         }
       >
         <p className="text-sm text-muted-foreground">
-          Deleted reviews disappear from the moderation queue and the public site.
+          Deleted reviews disappear from the moderation queue and the public
+          site.
         </p>
       </Dialog>
     </div>

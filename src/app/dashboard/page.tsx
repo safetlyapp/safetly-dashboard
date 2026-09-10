@@ -1,20 +1,20 @@
-import type { Metadata } from "next";
-import { eq } from "drizzle-orm";
-import { redirect } from "next/navigation";
-import { AdminDashboard } from "@/components/dashboard/admin-dashboard";
-import { db } from "@/db";
-import { admins } from "@/db/schema";
-import { getSession } from "@/lib/auth/session";
+import type { Metadata } from 'next';
+import { eq } from 'drizzle-orm';
+import { redirect } from 'next/navigation';
+import { AdminDashboard } from '@/components/dashboard/admin-dashboard';
+import { db } from '@/db';
+import { admins } from '@/db/schema';
+import { getSession } from '@/lib/auth/session';
 
 export const metadata: Metadata = {
-  title: "Dashboard",
-  description: "Administrator dashboard",
+  title: 'Dashboard',
+  description: 'Administrator dashboard',
 };
 
 export default async function DashboardPage() {
   const session = await getSession();
   if (!session) {
-    redirect("/login");
+    redirect('/login');
   }
 
   const [admin] = await db()
@@ -28,7 +28,7 @@ export default async function DashboardPage() {
     .limit(1);
 
   if (!admin) {
-    redirect("/login");
+    redirect('/login');
   }
 
   return (

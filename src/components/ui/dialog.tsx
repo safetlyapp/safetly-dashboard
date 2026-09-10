@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import * as React from "react";
-import { createPortal } from "react-dom";
-import { X } from "lucide-react";
+import * as React from 'react';
+import { createPortal } from 'react-dom';
+import { X } from 'lucide-react';
 
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 
 type DialogProps = {
   open: boolean;
@@ -28,17 +28,17 @@ function Dialog({
 }: DialogProps) {
   React.useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") onOpenChange(false);
+      if (event.key === 'Escape') onOpenChange(false);
     }
 
     if (open) {
-      window.addEventListener("keydown", onKeyDown);
-      document.body.style.overflow = "hidden";
+      window.addEventListener('keydown', onKeyDown);
+      document.body.style.overflow = 'hidden';
     }
 
     return () => {
-      window.removeEventListener("keydown", onKeyDown);
-      document.body.style.overflow = "";
+      window.removeEventListener('keydown', onKeyDown);
+      document.body.style.overflow = '';
     };
   }, [open, onOpenChange]);
 
@@ -57,8 +57,8 @@ function Dialog({
         aria-modal="true"
         aria-labelledby="dialog-title"
         className={cn(
-          "relative z-10 w-full max-w-3xl overflow-hidden rounded-2xl border bg-background shadow-2xl",
-          className,
+          'relative z-10 w-full max-w-3xl overflow-hidden rounded-2xl border bg-background shadow-2xl',
+          className
         )}
       >
         <div className="flex items-start justify-between gap-4 border-b p-5">
@@ -67,7 +67,9 @@ function Dialog({
               {title}
             </h2>
             {description ? (
-              <p className="mt-1 text-sm text-muted-foreground">{description}</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {description}
+              </p>
             ) : null}
           </div>
           <Button
@@ -84,7 +86,7 @@ function Dialog({
         {footer ? <div className="border-t p-5">{footer}</div> : null}
       </div>
     </div>,
-    document.body,
+    document.body
   );
 }
 

@@ -1,15 +1,15 @@
-import { eq } from "drizzle-orm";
-import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/db";
-import { admins } from "@/db/schema";
-import { clearSessionCookie, SESSION_COOKIE_NAME } from "@/lib/auth/constants";
-import { getSession } from "@/lib/auth/session";
-import { verifySessionToken } from "@/lib/auth/jwt";
+import { eq } from 'drizzle-orm';
+import { NextRequest, NextResponse } from 'next/server';
+import { db } from '@/db';
+import { admins } from '@/db/schema';
+import { clearSessionCookie, SESSION_COOKIE_NAME } from '@/lib/auth/constants';
+import { getSession } from '@/lib/auth/session';
+import { verifySessionToken } from '@/lib/auth/jwt';
 
 export async function GET(request: NextRequest) {
-  const authorization = request.headers.get("authorization");
-  const bearerToken = authorization?.startsWith("Bearer ")
-    ? authorization.slice("Bearer ".length).trim()
+  const authorization = request.headers.get('authorization');
+  const bearerToken = authorization?.startsWith('Bearer ')
+    ? authorization.slice('Bearer '.length).trim()
     : null;
 
   const session = bearerToken
@@ -17,8 +17,11 @@ export async function GET(request: NextRequest) {
     : await getSession();
 
   if (!session) {
-    const response = NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    response.cookies.set(SESSION_COOKIE_NAME, "", clearSessionCookie());
+    const response = NextResponse.json(
+      { error: 'Unauthorized' },
+      { status: 401 }
+    );
+    response.cookies.set(SESSION_COOKIE_NAME, '', clearSessionCookie());
     return response;
   }
 
@@ -33,8 +36,11 @@ export async function GET(request: NextRequest) {
     .limit(1);
 
   if (!admin) {
-    const response = NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    response.cookies.set(SESSION_COOKIE_NAME, "", clearSessionCookie());
+    const response = NextResponse.json(
+      { error: 'Unauthorized' },
+      { status: 401 }
+    );
+    response.cookies.set(SESSION_COOKIE_NAME, '', clearSessionCookie());
     return response;
   }
 

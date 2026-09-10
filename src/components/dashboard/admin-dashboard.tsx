@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { FormEvent, useState } from "react";
-import { KeyRound, User } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { FormEvent, useState } from 'react';
+import { KeyRound, User } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -10,10 +10,10 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { readApiError } from "@/lib/api/client";
+} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { readApiError } from '@/lib/api/client';
 
 type AdminDashboardProps = {
   id: string;
@@ -22,51 +22,63 @@ type AdminDashboardProps = {
 };
 
 export function AdminDashboard({ id, email, createdAt }: AdminDashboardProps) {
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [pending, setPending] = useState(false);
-  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [message, setMessage] = useState<{
+    type: 'success' | 'error';
+    text: string;
+  } | null>(null);
 
   async function handlePasswordChange(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setMessage(null);
 
     if (newPassword.length < 8) {
-      setMessage({ type: "error", text: "New password must be at least 8 characters." });
+      setMessage({
+        type: 'error',
+        text: 'New password must be at least 8 characters.',
+      });
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      setMessage({ type: "error", text: "New password and confirmation do not match." });
+      setMessage({
+        type: 'error',
+        text: 'New password and confirmation do not match.',
+      });
       return;
     }
 
     setPending(true);
     try {
-      const response = await fetch("/api/admin/change-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const response = await fetch('/api/admin/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ currentPassword, newPassword, confirmPassword }),
       });
 
       if (!response.ok) {
         setMessage({
-          type: "error",
+          type: 'error',
           text: await readApiError(
             response,
-            "Could not update password. Please try again.",
+            'Could not update password. Please try again.'
           ),
         });
         return;
       }
 
-      setCurrentPassword("");
-      setNewPassword("");
-      setConfirmPassword("");
-      setMessage({ type: "success", text: "Password updated successfully." });
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      setMessage({ type: 'success', text: 'Password updated successfully.' });
     } catch {
-      setMessage({ type: "error", text: "Network error while updating password." });
+      setMessage({
+        type: 'error',
+        text: 'Network error while updating password.',
+      });
     } finally {
       setPending(false);
     }
@@ -90,23 +102,33 @@ export function AdminDashboard({ id, email, createdAt }: AdminDashboardProps) {
           <CardContent className="space-y-4">
             <div className="rounded-lg border bg-muted/40 p-4">
               <p className="text-xs text-muted-foreground">User ID</p>
-              <p className="mt-1 break-all text-sm font-medium text-foreground">{id}</p>
+              <p className="mt-1 break-all text-sm font-medium text-foreground">
+                {id}
+              </p>
             </div>
             <div className="rounded-lg border bg-muted/40 p-4">
               <p className="text-xs text-muted-foreground">Signed in email</p>
-              <p className="mt-1 break-all text-sm font-medium text-foreground">{email}</p>
+              <p className="mt-1 break-all text-sm font-medium text-foreground">
+                {email}
+              </p>
             </div>
             <div className="rounded-lg border bg-muted/40 p-4">
               <p className="text-xs text-muted-foreground">Account created</p>
-              <p className="mt-1 text-sm font-medium text-foreground">{createdAtLabel}</p>
+              <p className="mt-1 text-sm font-medium text-foreground">
+                {createdAtLabel}
+              </p>
             </div>
             <div className="rounded-lg border bg-muted/40 p-4">
               <p className="text-xs text-muted-foreground">Role</p>
-              <p className="mt-1 text-sm font-medium text-foreground">System Administrator</p>
+              <p className="mt-1 text-sm font-medium text-foreground">
+                System Administrator
+              </p>
             </div>
             <div className="rounded-lg border bg-muted/40 p-4">
               <p className="text-xs text-muted-foreground">Status</p>
-              <p className="mt-1 text-sm font-medium text-foreground">Active session</p>
+              <p className="mt-1 text-sm font-medium text-foreground">
+                Active session
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -163,7 +185,9 @@ export function AdminDashboard({ id, email, createdAt }: AdminDashboardProps) {
               {message ? (
                 <p
                   className={`text-sm ${
-                    message.type === "success" ? "text-foreground" : "text-destructive"
+                    message.type === 'success'
+                      ? 'text-foreground'
+                      : 'text-destructive'
                   }`}
                   role="status"
                 >
@@ -172,7 +196,7 @@ export function AdminDashboard({ id, email, createdAt }: AdminDashboardProps) {
               ) : null}
               <CardFooter className="justify-end gap-2 border-t-0 bg-transparent p-0 pt-2">
                 <Button type="submit" disabled={pending}>
-                  {pending ? "Updating..." : "Change password"}
+                  {pending ? 'Updating...' : 'Change password'}
                 </Button>
               </CardFooter>
             </form>

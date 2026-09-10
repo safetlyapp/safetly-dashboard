@@ -1,8 +1,8 @@
-import "dotenv/config";
-import { eq } from "drizzle-orm";
-import { db } from "../src/db";
-import { admins } from "../src/db/schema";
-import { hashPassword } from "../src/lib/auth/password";
+import 'dotenv/config';
+import { eq } from 'drizzle-orm';
+import { db } from '../src/db';
+import { admins } from '../src/db/schema';
+import { hashPassword } from '../src/lib/auth/password';
 
 async function main() {
   const email = process.env.ADMIN_EMAIL?.trim().toLowerCase();
@@ -10,13 +10,13 @@ async function main() {
 
   if (!email || !password) {
     console.error(
-      "Set ADMIN_EMAIL and ADMIN_PASSWORD in the environment before seeding.",
+      'Set ADMIN_EMAIL and ADMIN_PASSWORD in the environment before seeding.'
     );
     process.exit(1);
   }
 
   if (password.length < 12) {
-    console.error("ADMIN_PASSWORD should be at least 12 characters.");
+    console.error('ADMIN_PASSWORD should be at least 12 characters.');
     process.exit(1);
   }
 
@@ -27,13 +27,13 @@ async function main() {
     .limit(1);
 
   if (existing) {
-    console.error("An admin with this email already exists.");
+    console.error('An admin with this email already exists.');
     process.exit(1);
   }
 
   const passwordHash = await hashPassword(password);
   await db().insert(admins).values({ email, passwordHash });
-  console.log("Admin user created.");
+  console.log('Admin user created.');
 }
 
 main().catch((err) => {

@@ -1,10 +1,10 @@
-import * as jose from "jose";
-import { getSessionMaxAgeSeconds } from "./constants";
+import * as jose from 'jose';
+import { getSessionMaxAgeSeconds } from './constants';
 
 function getSecretKey(): Uint8Array {
   const secret = process.env.JWT_SECRET;
   if (!secret || secret.length < 32) {
-    throw new Error("JWT_SECRET must be set and at least 32 characters");
+    throw new Error('JWT_SECRET must be set and at least 32 characters');
   }
   return new TextEncoder().encode(secret);
 }
@@ -14,9 +14,8 @@ export async function signSessionToken(payload: {
   email: string;
 }): Promise<string> {
   const maxAge = getSessionMaxAgeSeconds();
-  return await new jose
-    .SignJWT({ email: payload.email })
-    .setProtectedHeader({ alg: "HS256" })
+  return await new jose.SignJWT({ email: payload.email })
+    .setProtectedHeader({ alg: 'HS256' })
     .setSubject(payload.sub)
     .setIssuedAt()
     .setExpirationTime(`${maxAge}s`)
@@ -26,15 +25,15 @@ export async function signSessionToken(payload: {
 export type SessionPayload = { sub: string; email: string };
 
 export async function verifySessionToken(
-  token: string,
+  token: string
 ): Promise<SessionPayload | null> {
   try {
     const { payload } = await jose.jwtVerify(token, getSecretKey(), {
-      algorithms: ["HS256"],
+      algorithms: ['HS256'],
     });
     const sub = payload.sub;
     const email = payload.email;
-    if (typeof sub !== "string" || typeof email !== "string") {
+    if (typeof sub !== 'string' || typeof email !== 'string') {
       return null;
     }
     return { sub, email };

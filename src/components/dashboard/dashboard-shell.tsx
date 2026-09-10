@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import {
   BarChart3,
   ChevronRight,
@@ -9,35 +9,59 @@ import {
   LayoutDashboard,
   MessageSquareText,
   Menu,
-} from "lucide-react";
-import { useEffect, useState } from "react";
-import { SignOutButton } from "@/components/auth/sign-out-button";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+  TicketPercent,
+  Users,
+  Receipt,
+  SearchCheck,
+} from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { SignOutButton } from '@/components/auth/sign-out-button';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 const navItems = [
-  { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
-  { href: "/dashboard/pricing", label: "Pricing", icon: CircleDollarSign },
-  { href: "/dashboard/reviews", label: "Reviews", icon: BarChart3 },
-  { href: "/dashboard/faq", label: "FAQ", icon: MessageSquareText },
+  { href: '/dashboard', label: 'Overview', icon: LayoutDashboard },
+  { href: '/dashboard/pricing', label: 'Pricing', icon: CircleDollarSign },
+  { href: '/dashboard/reviews', label: 'Reviews', icon: BarChart3 },
+  { href: '/dashboard/faq', label: 'FAQ', icon: MessageSquareText },
+  { href: '/dashboard/coupons', label: 'Coupons', icon: TicketPercent },
+  { href: '/dashboard/users', label: 'Users & subscriptions', icon: Users },
+  { href: '/dashboard/payments', label: 'Payments', icon: Receipt },
+  { href: '/dashboard/seo', label: 'SEO Settings', icon: SearchCheck },
 ];
 
 const sectionMeta: Record<string, { title: string; description: string }> = {
-  "/dashboard": {
-    title: "Overview",
-    description: "Manage account and security settings.",
+  '/dashboard': {
+    title: 'Overview',
+    description: 'Manage account and security settings.',
   },
-  "/dashboard/pricing": {
-    title: "Pricing",
-    description: "Create, edit, and remove subscription plans.",
+  '/dashboard/pricing': {
+    title: 'Pricing',
+    description: 'Create, edit, and remove subscription plans.',
   },
-  "/dashboard/reviews": {
-    title: "Reviews",
-    description: "Moderate testimonials and control homepage highlights.",
+  '/dashboard/reviews': {
+    title: 'Reviews',
+    description: 'Moderate testimonials and control homepage highlights.',
   },
-  "/dashboard/faq": {
-    title: "FAQ",
-    description: "Organize categories and rich-text FAQ items.",
+  '/dashboard/faq': {
+    title: 'FAQ',
+    description: 'Organize categories and rich-text FAQ items.',
+  },
+  '/dashboard/coupons': {
+    title: 'Coupons',
+    description: 'Track coupon usage, limits, and expiry status.',
+  },
+  '/dashboard/users': {
+    title: 'Users & subscriptions',
+    description: 'Manage parent-child relationships, plans, and revenue.',
+  },
+  '/dashboard/payments': {
+    title: 'Payments',
+    description: 'Search and review all customer payment records.',
+  },
+  '/dashboard/seo': {
+    title: 'SEO Settings',
+    description: 'Manage public search and social metadata.',
   },
 };
 
@@ -45,8 +69,8 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const section = sectionMeta[pathname] ?? {
-    title: "Dashboard",
-    description: "Manage Safetly content and admin settings.",
+    title: 'Dashboard',
+    description: 'Manage Safetly content and admin settings.',
   };
 
   useEffect(() => {
@@ -60,19 +84,19 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
     if (!sidebarOpen) return;
 
     const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    document.body.style.overflow = 'hidden';
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
+      if (event.key === 'Escape') {
         setSidebarOpen(false);
       }
     };
 
-    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener('keydown', handleKeyDown);
 
     return () => {
       document.body.style.overflow = previousOverflow;
-      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener('keydown', handleKeyDown);
     };
   }, [sidebarOpen]);
 
@@ -89,8 +113,8 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         ) : null}
         <aside
           className={cn(
-            "fixed inset-y-0 left-0 z-40 w-72 border-r bg-background/95 p-4 backdrop-blur transition-transform duration-200 md:static md:translate-x-0",
-            sidebarOpen ? "translate-x-0" : "-translate-x-full",
+            'fixed inset-y-0 left-0 z-40 w-72 border-r bg-background/95 p-4 backdrop-blur transition-transform duration-200 md:static md:translate-x-0',
+            sidebarOpen ? 'translate-x-0' : '-translate-x-full'
           )}
         >
           <div className="mb-6 flex items-center justify-between">
@@ -124,10 +148,10 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
                   href={item.href}
                   onClick={() => setSidebarOpen(false)}
                   className={cn(
-                    "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+                    'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors',
                     active
-                      ? "bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-sm"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                      ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-sm'
+                      : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                   )}
                 >
                   <Icon className="size-4" />
@@ -153,7 +177,9 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
                   <Menu className="size-4" />
                 </Button>
                 <div>
-                  <h1 className="text-base font-semibold md:text-lg">{section.title}</h1>
+                  <h1 className="text-base font-semibold md:text-lg">
+                    {section.title}
+                  </h1>
                   <p className="text-xs text-muted-foreground md:text-sm">
                     {section.description}
                   </p>

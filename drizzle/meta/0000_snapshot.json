@@ -42,9 +42,7 @@
         "admins_email_unique": {
           "name": "admins_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         }
       },
       "policies": {},
@@ -104,9 +102,7 @@
         "faq_categories_title_unique": {
           "name": "faq_categories_title_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "title"
-          ]
+          "columns": ["title"]
         }
       },
       "policies": {},
@@ -177,12 +173,8 @@
           "name": "faq_items_category_id_faq_categories_id_fk",
           "tableFrom": "faq_items",
           "tableTo": "faq_categories",
-          "columnsFrom": [
-            "category_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["category_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -302,9 +294,7 @@
         "pricing_plans_plan_id_unique": {
           "name": "pricing_plans_plan_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "plan_id"
-          ]
+          "columns": ["plan_id"]
         }
       },
       "policies": {},
@@ -403,11 +393,7 @@
     "public.review_status": {
       "name": "review_status",
       "schema": "public",
-      "values": [
-        "pending",
-        "approved",
-        "rejected"
-      ]
+      "values": ["pending", "approved", "rejected"]
     }
   },
   "schemas": {},

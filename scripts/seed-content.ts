@@ -1,16 +1,16 @@
-import "dotenv/config";
+import 'dotenv/config';
 
-import { readFileSync } from "node:fs";
-import { dirname, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
-import ts from "typescript";
-import { db } from "../src/db";
+import { readFileSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import ts from 'typescript';
+import { db } from '../src/db';
 import {
   faqCategories,
   faqItems,
   pricingPlans,
   reviews,
-} from "../src/db/schema";
+} from '../src/db/schema';
 
 type PricingSourcePlan = {
   id: string;
@@ -38,16 +38,16 @@ type FaqSourceCategory = {
 };
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
-const repoRoot = resolve(scriptDir, "..", "..");
+const repoRoot = resolve(scriptDir, '..', '..');
 
 function extractConstArray<T>(filePath: string, constName: string): T[] {
-  const sourceText = readFileSync(filePath, "utf8");
+  const sourceText = readFileSync(filePath, 'utf8');
   const sourceFile = ts.createSourceFile(
     filePath,
     sourceText,
     ts.ScriptTarget.Latest,
     true,
-    ts.ScriptKind.TSX,
+    ts.ScriptKind.TSX
   );
 
   for (const statement of sourceFile.statements) {
@@ -56,7 +56,10 @@ function extractConstArray<T>(filePath: string, constName: string): T[] {
     for (const declaration of statement.declarationList.declarations) {
       if (!ts.isIdentifier(declaration.name)) continue;
       if (declaration.name.text !== constName) continue;
-      if (!declaration.initializer || !ts.isArrayLiteralExpression(declaration.initializer)) {
+      if (
+        !declaration.initializer ||
+        !ts.isArrayLiteralExpression(declaration.initializer)
+      ) {
         throw new Error(`"${constName}" in ${filePath} is not a const array.`);
       }
 
@@ -70,11 +73,11 @@ function extractConstArray<T>(filePath: string, constName: string): T[] {
 
 function escapeHtml(value: string): string {
   return value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
 }
 
 function toHtmlParagraph(value: string): string {
@@ -91,16 +94,16 @@ function parseDate(value: string): Date {
 
 async function main() {
   const pricingSource = extractConstArray<PricingSourcePlan>(
-    resolve(repoRoot, "safetly-app/src/components/home/Pricing.tsx"),
-    "PLANS",
+    resolve(repoRoot, 'safetly-app/src/components/home/Pricing.tsx'),
+    'PLANS'
   );
   const reviewSource = extractConstArray<ReviewSource>(
-    resolve(repoRoot, "safetly-app/src/components/home/Reviews.tsx"),
-    "REVIEWS",
+    resolve(repoRoot, 'safetly-app/src/components/home/Reviews.tsx'),
+    'REVIEWS'
   );
   const faqSource = extractConstArray<FaqSourceCategory>(
-    resolve(repoRoot, "safetly-app/src/lib/faq-data.ts"),
-    "FAQ_CATEGORIES",
+    resolve(repoRoot, 'safetly-app/src/lib/faq-data.ts'),
+    'FAQ_CATEGORIES'
   );
 
   const pricingRows = pricingSource.map((plan, index) => ({
@@ -124,7 +127,7 @@ async function main() {
     rating: 5,
     reviewDate: parseDate(review.date),
     initials: review.initials,
-    status: "approved" as const,
+    status: 'approved' as const,
     isFeatured: true,
     displayOrder: index,
   }));
@@ -142,7 +145,7 @@ async function main() {
       answer: toHtmlParagraph(item.a),
       displayOrder: categoryIndex * 100 + itemIndex,
       isPublished: true,
-    })),
+    }))
   );
 
   await db().transaction(async (tx) => {
@@ -160,7 +163,7 @@ async function main() {
       .returning({ id: faqCategories.id, title: faqCategories.title });
 
     const categoryIdByTitle = new Map(
-      insertedCategories.map((category) => [category.title, category.id]),
+      insertedCategories.map((category) => [category.title, category.id])
     );
 
     await tx.insert(faqItems).values(
@@ -177,7 +180,7 @@ async function main() {
           displayOrder: item.displayOrder,
           isPublished: item.isPublished,
         };
-      }),
+      })
     );
   });
 
@@ -187,7 +190,7 @@ async function main() {
       `Seeded reviews: ${reviewRows.length}`,
       `Seeded FAQ categories: ${categoryRows.length}`,
       `Seeded FAQ items: ${itemRows.length}`,
-    ].join("\n"),
+    ].join('\n')
   );
 
   process.exit(0);

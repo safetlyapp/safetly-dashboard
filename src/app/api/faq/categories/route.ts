@@ -1,8 +1,8 @@
-import { asc, eq } from "drizzle-orm";
-import { type NextRequest } from "next/server";
-import { db } from "@/db";
-import { faqCategories } from "@/db/schema";
-import { requireAdmin } from "@/lib/api/admin-auth";
+import { asc, eq } from 'drizzle-orm';
+import { type NextRequest } from 'next/server';
+import { db } from '@/db';
+import { faqCategories } from '@/db/schema';
+import { requireAdmin } from '@/lib/api/admin-auth';
 import {
   badRequest,
   conflict,
@@ -12,7 +12,7 @@ import {
   parseInteger,
   parseString,
   readJsonObject,
-} from "@/lib/api/request";
+} from '@/lib/api/request';
 
 export async function GET() {
   const rows = await db()
@@ -26,17 +26,17 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   const auth = await requireAdmin(request);
-  if ("response" in auth) return auth.response;
+  if ('response' in auth) return auth.response;
 
   const payload = await readJsonObject(request);
-  if ("response" in payload) return payload.response;
+  if ('response' in payload) return payload.response;
 
   const title = parseString(payload.body.title);
   const displayOrder = parseInteger(payload.body.displayOrder);
   const isPublished = parseBoolean(payload.body.isPublished);
 
   if (!title || displayOrder === null || isPublished === null) {
-    return badRequest("title, displayOrder, and isPublished are required.");
+    return badRequest('title, displayOrder, and isPublished are required.');
   }
 
   const [existing] = await db()
@@ -44,7 +44,8 @@ export async function POST(request: NextRequest) {
     .from(faqCategories)
     .where(eq(faqCategories.title, title))
     .limit(1);
-  if (existing) return conflict("A FAQ category with this title already exists.");
+  if (existing)
+    return conflict('A FAQ category with this title already exists.');
 
   const [category] = await db()
     .insert(faqCategories)

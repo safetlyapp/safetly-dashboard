@@ -1,16 +1,29 @@
-"use client";
+'use client';
 
-import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Textarea } from "@/components/ui/textarea";
-import { readApiError } from "@/lib/api/client";
+import { useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Dialog } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Textarea } from '@/components/ui/textarea';
+import { readApiError } from '@/lib/api/client';
 
 type PricingPlanRow = {
   id: string;
@@ -44,18 +57,18 @@ type PricingFormState = {
 };
 
 const emptyForm: PricingFormState = {
-  planId: "",
-  name: "",
-  price: "",
-  per: "",
-  billedNote: "",
-  strikeNote: "",
-  cta: "",
-  accentColor: "#F16521",
+  planId: '',
+  name: '',
+  price: '',
+  per: '',
+  billedNote: '',
+  strikeNote: '',
+  cta: '',
+  accentColor: '#F16521',
   isPopular: false,
   isActive: true,
-  displayOrder: "0",
-  features: "",
+  displayOrder: '0',
+  features: '',
 };
 
 function formFromPlan(plan: PricingPlanRow): PricingFormState {
@@ -65,28 +78,32 @@ function formFromPlan(plan: PricingPlanRow): PricingFormState {
     price: plan.price,
     per: plan.per,
     billedNote: plan.billedNote,
-    strikeNote: plan.strikeNote ?? "",
+    strikeNote: plan.strikeNote ?? '',
     cta: plan.cta,
     accentColor: plan.accentColor,
     isPopular: plan.isPopular,
     isActive: plan.isActive,
     displayOrder: String(plan.displayOrder),
-    features: plan.features.join("\n"),
+    features: plan.features.join('\n'),
   };
 }
 
 function lines(value: string) {
   return value
-    .split("\n")
+    .split('\n')
     .map((line) => line.trim())
     .filter(Boolean);
 }
 
-export function PricingAdmin({ initialPlans }: { initialPlans: PricingPlanRow[] }) {
+export function PricingAdmin({
+  initialPlans,
+}: {
+  initialPlans: PricingPlanRow[];
+}) {
   const router = useRouter();
   const [plans, setPlans] = useState(initialPlans);
   const [open, setOpen] = useState(false);
-  const [mode, setMode] = useState<"create" | "edit">("create");
+  const [mode, setMode] = useState<'create' | 'edit'>('create');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<PricingFormState>(emptyForm);
   const [deleteTarget, setDeleteTarget] = useState<PricingPlanRow | null>(null);
@@ -95,11 +112,11 @@ export function PricingAdmin({ initialPlans }: { initialPlans: PricingPlanRow[] 
 
   const editingPlan = useMemo(
     () => plans.find((plan) => plan.id === editingId) ?? null,
-    [editingId, plans],
+    [editingId, plans]
   );
 
   function openCreate() {
-    setMode("create");
+    setMode('create');
     setEditingId(null);
     setForm(emptyForm);
     setError(null);
@@ -107,7 +124,7 @@ export function PricingAdmin({ initialPlans }: { initialPlans: PricingPlanRow[] 
   }
 
   function openEdit(plan: PricingPlanRow) {
-    setMode("edit");
+    setMode('edit');
     setEditingId(plan.id);
     setForm(formFromPlan(plan));
     setError(null);
@@ -136,32 +153,30 @@ export function PricingAdmin({ initialPlans }: { initialPlans: PricingPlanRow[] 
 
     try {
       const response = await fetch(
-        mode === "create"
-          ? "/api/pricing"
-          : `/api/pricing/${editingId}`,
+        mode === 'create' ? '/api/pricing' : `/api/pricing/${editingId}`,
         {
-          method: mode === "create" ? "POST" : "PATCH",
-          headers: { "Content-Type": "application/json" },
+          method: mode === 'create' ? 'POST' : 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
-        },
+        }
       );
 
       if (!response.ok) {
-        setError(await readApiError(response, "Could not save pricing plan."));
+        setError(await readApiError(response, 'Could not save pricing plan.'));
         return;
       }
 
       const data: unknown = await response.json();
       const plan =
-        data && typeof data === "object" && "plan" in data
+        data && typeof data === 'object' && 'plan' in data
           ? (data as { plan?: PricingPlanRow }).plan
           : null;
 
       if (plan) {
         setPlans((current) =>
-          mode === "create"
+          mode === 'create'
             ? [...current, plan].sort((a, b) => a.displayOrder - b.displayOrder)
-            : current.map((item) => (item.id === plan.id ? plan : item)),
+            : current.map((item) => (item.id === plan.id ? plan : item))
         );
       } else {
         router.refresh();
@@ -171,7 +186,7 @@ export function PricingAdmin({ initialPlans }: { initialPlans: PricingPlanRow[] 
       setForm(emptyForm);
       setEditingId(null);
     } catch {
-      setError("Network error while saving pricing plan.");
+      setError('Network error while saving pricing plan.');
     } finally {
       setPending(false);
     }
@@ -183,17 +198,21 @@ export function PricingAdmin({ initialPlans }: { initialPlans: PricingPlanRow[] 
     setError(null);
     try {
       const response = await fetch(`/api/pricing/${deleteTarget.id}`, {
-        method: "DELETE",
+        method: 'DELETE',
       });
       if (!response.ok && response.status !== 204) {
-        setError(await readApiError(response, "Could not delete pricing plan."));
+        setError(
+          await readApiError(response, 'Could not delete pricing plan.')
+        );
         return;
       }
-      setPlans((current) => current.filter((item) => item.id !== deleteTarget.id));
+      setPlans((current) =>
+        current.filter((item) => item.id !== deleteTarget.id)
+      );
       setDeleteTarget(null);
       router.refresh();
     } catch {
-      setError("Network error while deleting pricing plan.");
+      setError('Network error while deleting pricing plan.');
     } finally {
       setPending(false);
     }
@@ -210,7 +229,10 @@ export function PricingAdmin({ initialPlans }: { initialPlans: PricingPlanRow[] 
                 Manage subscription plans shown on the public site.
               </CardDescription>
             </div>
-            <Button onClick={openCreate} className="bg-gradient-to-r from-orange-500 to-amber-500 text-white">
+            <Button
+              onClick={openCreate}
+              className="bg-gradient-to-r from-orange-500 to-amber-500 text-white"
+            >
               New plan
             </Button>
           </div>
@@ -247,23 +269,28 @@ export function PricingAdmin({ initialPlans }: { initialPlans: PricingPlanRow[] 
                   <TableCell>
                     <div className="space-y-1">
                       <p className="font-semibold">
-                        {plan.price} <span className="text-sm font-normal text-muted-foreground">{plan.per}</span>
+                        {plan.price}{' '}
+                        <span className="text-sm font-normal text-muted-foreground">
+                          {plan.per}
+                        </span>
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {plan.billedNote}
                         {plan.strikeNote ? (
-                          <span className="ml-1 line-through">{plan.strikeNote}</span>
+                          <span className="ml-1 line-through">
+                            {plan.strikeNote}
+                          </span>
                         ) : null}
                       </p>
                     </div>
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-wrap gap-2">
-                      <Badge variant={plan.isPopular ? "warning" : "outline"}>
-                        {plan.isPopular ? "Popular" : "Standard"}
+                      <Badge variant={plan.isPopular ? 'warning' : 'outline'}>
+                        {plan.isPopular ? 'Popular' : 'Standard'}
                       </Badge>
-                      <Badge variant={plan.isActive ? "success" : "secondary"}>
-                        {plan.isActive ? "Active" : "Hidden"}
+                      <Badge variant={plan.isActive ? 'success' : 'secondary'}>
+                        {plan.isActive ? 'Active' : 'Hidden'}
                       </Badge>
                     </div>
                   </TableCell>
@@ -275,14 +302,20 @@ export function PricingAdmin({ initialPlans }: { initialPlans: PricingPlanRow[] 
                         </Badge>
                       ))}
                       {plan.features.length > 2 ? (
-                        <Badge variant="secondary">+{plan.features.length - 2} more</Badge>
+                        <Badge variant="secondary">
+                          +{plan.features.length - 2} more
+                        </Badge>
                       ) : null}
                     </div>
                   </TableCell>
                   <TableCell>{plan.displayOrder}</TableCell>
                   <TableCell className="text-right">
                     <div className="inline-flex gap-2">
-                      <Button variant="outline" size="sm" onClick={() => openEdit(plan)}>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openEdit(plan)}
+                      >
                         Edit
                       </Button>
                       <Button
@@ -304,11 +337,11 @@ export function PricingAdmin({ initialPlans }: { initialPlans: PricingPlanRow[] 
       <Dialog
         open={open}
         onOpenChange={setOpen}
-        title={mode === "create" ? "Create pricing plan" : "Edit pricing plan"}
+        title={mode === 'create' ? 'Create pricing plan' : 'Edit pricing plan'}
         description={
-          mode === "create"
-            ? "Add a new plan to the pricing table."
-            : `Editing ${editingPlan?.name ?? "pricing plan"}`
+          mode === 'create'
+            ? 'Add a new plan to the pricing table.'
+            : `Editing ${editingPlan?.name ?? 'pricing plan'}`
         }
         footer={
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -316,7 +349,11 @@ export function PricingAdmin({ initialPlans }: { initialPlans: PricingPlanRow[] 
               Prices and features update immediately after saving.
             </p>
             <div className="flex gap-2">
-              <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setOpen(false)}
+              >
                 Cancel
               </Button>
               <Button
@@ -325,13 +362,17 @@ export function PricingAdmin({ initialPlans }: { initialPlans: PricingPlanRow[] 
                 className="bg-gradient-to-r from-orange-500 to-amber-500 text-white"
                 disabled={pending}
               >
-                {pending ? "Saving..." : "Save plan"}
+                {pending ? 'Saving...' : 'Save plan'}
               </Button>
             </div>
           </div>
         }
       >
-        <form id="pricing-form" className="grid gap-4 md:grid-cols-2" onSubmit={submitForm}>
+        <form
+          id="pricing-form"
+          className="grid gap-4 md:grid-cols-2"
+          onSubmit={submitForm}
+        >
           {error ? (
             <p className="md:col-span-2 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
               {error}
@@ -343,7 +384,12 @@ export function PricingAdmin({ initialPlans }: { initialPlans: PricingPlanRow[] 
             <Input
               id="planId"
               value={form.planId}
-              onChange={(event) => setForm((current) => ({ ...current, planId: event.target.value }))}
+              onChange={(event) =>
+                setForm((current) => ({
+                  ...current,
+                  planId: event.target.value,
+                }))
+              }
               placeholder="monthly"
               required
             />
@@ -353,7 +399,9 @@ export function PricingAdmin({ initialPlans }: { initialPlans: PricingPlanRow[] 
             <Input
               id="name"
               value={form.name}
-              onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
+              onChange={(event) =>
+                setForm((current) => ({ ...current, name: event.target.value }))
+              }
               placeholder="Monthly/30-Day"
               required
             />
@@ -363,7 +411,12 @@ export function PricingAdmin({ initialPlans }: { initialPlans: PricingPlanRow[] 
             <Input
               id="price"
               value={form.price}
-              onChange={(event) => setForm((current) => ({ ...current, price: event.target.value }))}
+              onChange={(event) =>
+                setForm((current) => ({
+                  ...current,
+                  price: event.target.value,
+                }))
+              }
               placeholder="৳99"
               required
             />
@@ -373,7 +426,9 @@ export function PricingAdmin({ initialPlans }: { initialPlans: PricingPlanRow[] 
             <Input
               id="per"
               value={form.per}
-              onChange={(event) => setForm((current) => ({ ...current, per: event.target.value }))}
+              onChange={(event) =>
+                setForm((current) => ({ ...current, per: event.target.value }))
+              }
               placeholder="/mo."
               required
             />
@@ -383,7 +438,12 @@ export function PricingAdmin({ initialPlans }: { initialPlans: PricingPlanRow[] 
             <Input
               id="billedNote"
               value={form.billedNote}
-              onChange={(event) => setForm((current) => ({ ...current, billedNote: event.target.value }))}
+              onChange={(event) =>
+                setForm((current) => ({
+                  ...current,
+                  billedNote: event.target.value,
+                }))
+              }
               placeholder="*Billed monthly at ৳99"
               required
             />
@@ -393,7 +453,12 @@ export function PricingAdmin({ initialPlans }: { initialPlans: PricingPlanRow[] 
             <Input
               id="strikeNote"
               value={form.strikeNote}
-              onChange={(event) => setForm((current) => ({ ...current, strikeNote: event.target.value }))}
+              onChange={(event) =>
+                setForm((current) => ({
+                  ...current,
+                  strikeNote: event.target.value,
+                }))
+              }
               placeholder="৳297"
             />
           </div>
@@ -402,7 +467,9 @@ export function PricingAdmin({ initialPlans }: { initialPlans: PricingPlanRow[] 
             <Input
               id="cta"
               value={form.cta}
-              onChange={(event) => setForm((current) => ({ ...current, cta: event.target.value }))}
+              onChange={(event) =>
+                setForm((current) => ({ ...current, cta: event.target.value }))
+              }
               placeholder="Subscribe for 30 days"
               required
             />
@@ -414,7 +481,10 @@ export function PricingAdmin({ initialPlans }: { initialPlans: PricingPlanRow[] 
                 id="accentColor"
                 value={form.accentColor}
                 onChange={(event) =>
-                  setForm((current) => ({ ...current, accentColor: event.target.value }))
+                  setForm((current) => ({
+                    ...current,
+                    accentColor: event.target.value,
+                  }))
                 }
                 placeholder="#F16521"
                 required
@@ -432,7 +502,10 @@ export function PricingAdmin({ initialPlans }: { initialPlans: PricingPlanRow[] 
               type="number"
               value={form.displayOrder}
               onChange={(event) =>
-                setForm((current) => ({ ...current, displayOrder: event.target.value }))
+                setForm((current) => ({
+                  ...current,
+                  displayOrder: event.target.value,
+                }))
               }
             />
           </div>
@@ -442,7 +515,10 @@ export function PricingAdmin({ initialPlans }: { initialPlans: PricingPlanRow[] 
                 type="checkbox"
                 checked={form.isPopular}
                 onChange={(event) =>
-                  setForm((current) => ({ ...current, isPopular: event.target.checked }))
+                  setForm((current) => ({
+                    ...current,
+                    isPopular: event.target.checked,
+                  }))
                 }
                 className="h-4 w-4 accent-orange-500"
               />
@@ -453,7 +529,10 @@ export function PricingAdmin({ initialPlans }: { initialPlans: PricingPlanRow[] 
                 type="checkbox"
                 checked={form.isActive}
                 onChange={(event) =>
-                  setForm((current) => ({ ...current, isActive: event.target.checked }))
+                  setForm((current) => ({
+                    ...current,
+                    isActive: event.target.checked,
+                  }))
                 }
                 className="h-4 w-4 accent-emerald-500"
               />
@@ -466,9 +545,12 @@ export function PricingAdmin({ initialPlans }: { initialPlans: PricingPlanRow[] 
               id="features"
               value={form.features}
               onChange={(event) =>
-                setForm((current) => ({ ...current, features: event.target.value }))
+                setForm((current) => ({
+                  ...current,
+                  features: event.target.value,
+                }))
               }
-              placeholder={"1-month access\nNo auto-renew\nOne device tracking"}
+              placeholder={'1-month access\nNo auto-renew\nOne device tracking'}
               rows={6}
             />
             <p className="text-xs text-muted-foreground">
@@ -497,7 +579,7 @@ export function PricingAdmin({ initialPlans }: { initialPlans: PricingPlanRow[] 
               onClick={deletePlan}
               disabled={pending}
             >
-              {pending ? "Deleting..." : "Delete"}
+              {pending ? 'Deleting...' : 'Delete'}
             </Button>
           </div>
         }
