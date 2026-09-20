@@ -264,7 +264,10 @@ async function activateSubscription(input: {
           'Content-Type': 'application/json',
           Accept: 'application/json',
         },
-        body: JSON.stringify({ expireDate: expiresAt.toISOString() }),
+        body: JSON.stringify({
+          email: child.email,
+          expireDate: expiresAt.toISOString(),
+        }),
         cache: 'no-store',
       }
     );

@@ -17,6 +17,7 @@ const defaults = {
   ogImage: '/hero.png',
   twitterTitle: 'Safetly | Smart Parental Control & Family Safety',
   canonicalSiteUrl: 'https://safetly.app',
+  tutorialVideoUrl: null,
 };
 
 export async function GET() {
@@ -53,6 +54,10 @@ export async function PATCH(request: NextRequest) {
     typeof value.canonicalSiteUrl === 'string'
       ? value.canonicalSiteUrl.trim()
       : '';
+  const tutorialVideoUrl =
+    typeof value.tutorialVideoUrl === 'string'
+      ? value.tutorialVideoUrl.trim()
+      : '';
   if (!homepageTitle || !homepageDescription || !keywords || !canonicalSiteUrl)
     return NextResponse.json(
       {
@@ -72,6 +77,7 @@ export async function PATCH(request: NextRequest) {
     ogImage: ogImage || null,
     twitterTitle: twitterTitle || null,
     canonicalSiteUrl,
+    tutorialVideoUrl: tutorialVideoUrl || null,
   };
   const [settings] = existing
     ? await db()

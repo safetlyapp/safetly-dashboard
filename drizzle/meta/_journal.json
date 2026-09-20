@@ -43,6 +43,13 @@
       "when": 1788994913451,
       "tag": "0005_daily_onslaught",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1789300000000,
+      "tag": "0006_tutorial_video_url",
+      "breakpoints": true
     }
   ]
 }

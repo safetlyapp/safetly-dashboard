@@ -1,7 +1,7 @@
 'use client';
 
 import { FormEvent, useState } from 'react';
-import { KeyRound, User } from 'lucide-react';
+import { CheckCircle2, KeyRound, Receipt, ShieldCheck, User, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -19,9 +19,17 @@ type AdminDashboardProps = {
   id: string;
   email: string;
   createdAt: string;
+  stats: {
+    parents: number;
+    children: number;
+    premium: number;
+    trial: number;
+    payments: number;
+    approvedPayments: number;
+  };
 };
 
-export function AdminDashboard({ id, email, createdAt }: AdminDashboardProps) {
+export function AdminDashboard({ id, email, createdAt, stats }: AdminDashboardProps) {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -87,7 +95,22 @@ export function AdminDashboard({ id, email, createdAt }: AdminDashboardProps) {
   const createdAtLabel = new Date(createdAt).toLocaleString();
 
   return (
-    <main className="grid flex-1 gap-4 p-4 md:grid-cols-5 md:gap-6 md:p-6">
+    <main className="flex-1 space-y-6 p-4 md:p-6">
+      <section>
+        <div className="mb-4">
+          <h1 className="text-2xl font-semibold tracking-tight">Overview</h1>
+          <p className="text-sm text-muted-foreground">A quick view of users, subscriptions, and payments.</p>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <OverviewCard label="Parents" value={stats.parents} icon={<Users className="size-4" />} />
+          <OverviewCard label="Children" value={stats.children} icon={<User className="size-4" />} />
+          <OverviewCard label="Premium active" value={stats.premium} icon={<ShieldCheck className="size-4" />} tone="green" />
+          <OverviewCard label="Trial / inactive" value={stats.trial} icon={<CheckCircle2 className="size-4" />} tone="orange" />
+          <OverviewCard label="Payments" value={stats.payments} icon={<Receipt className="size-4" />} />
+          <OverviewCard label="Approved payments" value={stats.approvedPayments} icon={<CheckCircle2 className="size-4" />} tone="green" />
+        </div>
+      </section>
+      <div className="grid gap-4 md:grid-cols-5 md:gap-6">
       <section className="md:col-span-2">
         <Card className="h-full">
           <CardHeader>
@@ -203,6 +226,12 @@ export function AdminDashboard({ id, email, createdAt }: AdminDashboardProps) {
           </CardContent>
         </Card>
       </section>
+      </div>
     </main>
   );
+}
+
+function OverviewCard({ label, value, icon, tone = 'default' }: { label: string; value: number; icon: React.ReactNode; tone?: 'default' | 'green' | 'orange' }) {
+  const colors = tone === 'green' ? 'bg-emerald-100 text-emerald-700' : tone === 'orange' ? 'bg-orange-100 text-orange-700' : 'bg-muted text-foreground';
+  return <Card><CardContent className="flex items-center gap-3 p-4"><div className={`rounded-lg p-2 ${colors}`}>{icon}</div><div><p className="text-sm text-muted-foreground">{label}</p><p className="text-2xl font-semibold">{value}</p></div></CardContent></Card>;
 }

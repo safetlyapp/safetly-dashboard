@@ -132,6 +132,7 @@ export const seoSettings = pgTable('seo_settings', {
   ogImage: text('og_image'),
   twitterTitle: text('twitter_title'),
   canonicalSiteUrl: text('canonical_site_url'),
+  tutorialVideoUrl: text('tutorial_video_url'),
   ...timestamps,
 });
 
