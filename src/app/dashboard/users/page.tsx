@@ -12,6 +12,7 @@ import {
   subscriptions,
 } from '@/db/schema';
 import { getSession } from '@/lib/auth/session';
+import { getExternalParentChildren } from '@/lib/parent-child-api';
 
 export const metadata: Metadata = {
   title: 'Users & subscriptions',
@@ -32,6 +33,7 @@ export default async function UsersPage() {
     .from(children)
     .innerJoin(parents, eq(children.parentId, parents.id))
     .orderBy(desc(children.createdAt));
+  const externalParents = await getExternalParentChildren();
   const subscriptionRows = await db()
     .select()
     .from(subscriptions)
@@ -75,30 +77,53 @@ export default async function UsersPage() {
         (paidByEmail.get(payment.customerEmail) ?? 0) +
           Number(payment.amount ?? payment.submitted)
       );
+  const localByEmail = new Map(
+    childRows.map(({ child, parent }) => [
+      child.email.toLowerCase(),
+      { child, parent },
+    ])
+  );
+  // External backend is the source of truth; never show local demo/seed users as a fallback.
+  const externalChildren = externalParents
+    ? externalParents.flatMap((parent) =>
+        parent.children.map((child) => {
+          const local = localByEmail.get(child.email.toLowerCase());
+          const subscription = local
+            ? latestSubscriptions.get(local.child.id)
+            : null;
+          return {
+            id: local?.child.id ?? '',
+            name: child.name,
+            username: child.username,
+            email: child.email,
+            parentName: parent.name,
+            parentEmail: parent.email,
+            totalPaid: paidByEmail.get(child.email.toLowerCase()) ?? 0,
+            canManageSubscription: Boolean(local),
+            subscription: subscription
+              ? {
+                  packageName: subscription.packageName,
+                  amount: subscription.amount,
+                  expiresAt: subscription.expiresAt.toISOString(),
+                  status: subscription.status,
+                }
+              : child.expireDate
+                ? {
+                    packageName: child.isPremium ? 'External subscription' : 'Trial / expired',
+                    amount: '0',
+                    expiresAt: child.expireDate,
+                    status: child.isPremium ? 'active' : 'expired',
+                  }
+                : null,
+          };
+        })
+      )
+    : [];
   return (
     <UsersAdmin
       revenue={revenue}
       plans={plans}
-      children={childRows.map(({ child, parent }) => {
-        const subscription = latestSubscriptions.get(child.id);
-        return {
-          id: child.id,
-          name: child.username,
-          username: child.username,
-          email: child.email,
-          parentName: parent.name,
-          parentEmail: parent.email,
-          totalPaid: paidByEmail.get(child.email) ?? 0,
-          subscription: subscription
-            ? {
-                packageName: subscription.packageName,
-                amount: subscription.amount,
-                expiresAt: subscription.expiresAt.toISOString(),
-                status: subscription.status,
-              }
-            : null,
-        };
-      })}
+      children={externalChildren}
     />
   );
 }

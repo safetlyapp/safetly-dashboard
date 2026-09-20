@@ -37,6 +37,7 @@ export default async function SeoPage() {
           ogImage: '/hero.png',
           twitterTitle: 'Safetly | Smart Parental Control & Family Safety',
           canonicalSiteUrl: 'https://safetly.app',
+          tutorialVideoUrl: null,
         }
       }
     />

@@ -23,6 +23,7 @@ type Child = {
   parentName: string;
   parentEmail: string;
   totalPaid: number;
+  canManageSubscription?: boolean;
   subscription: {
     packageName: string;
     amount: string;
@@ -76,8 +77,9 @@ export function UsersAdmin({
   revenue: number;
 }) {
   const router = useRouter();
+  const manageableChildren = children.filter((child) => child.id);
   const [form, setForm] = useState<FormState>(
-    emptyForm(children[0]?.id, plans[0]?.planId)
+    emptyForm(manageableChildren[0]?.id, plans[0]?.planId)
   );
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -145,7 +147,7 @@ export function UsersAdmin({
       return;
     }
     setSuccess('Subscription added and child expiry date updated.');
-    setForm(emptyForm(children[0]?.id, plans[0]?.planId));
+    setForm(emptyForm(manageableChildren[0]?.id, plans[0]?.planId));
     router.refresh();
     setSaving(false);
   }
@@ -194,8 +196,13 @@ export function UsersAdmin({
                     Select a child
                   </option>
                   {children.map((child) => (
-                    <option key={child.id} value={child.id}>
+                    <option
+                      key={child.email}
+                      value={child.id}
+                      disabled={!child.id}
+                    >
                       {child.username} — {child.email}
+                      {!child.id ? ' (subscription link unavailable)' : ''}
                     </option>
                   ))}
                 </select>
@@ -220,7 +227,10 @@ export function UsersAdmin({
               </Field>
             </div>
             <div className="flex justify-end border-t pt-5">
-              <Button type="submit" disabled={saving || children.length === 0}>
+              <Button
+                type="submit"
+                disabled={saving || manageableChildren.length === 0}
+              >
                 {saving ? 'Saving subscription…' : 'Add subscription'}
               </Button>
             </div>
@@ -289,7 +299,7 @@ export function UsersAdmin({
                             new Date(child.subscription.expiresAt) > new Date();
                           return (
                             <div
-                              key={child.id}
+                              key={child.id || child.email}
                               className="grid gap-3 rounded-lg border bg-white p-3 md:grid-cols-[1fr_1fr_1fr_auto] md:items-center"
                             >
                               <div>

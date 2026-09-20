@@ -20,6 +20,7 @@ type SeoSettings = {
   ogImage: string | null;
   twitterTitle: string | null;
   canonicalSiteUrl: string | null;
+  tutorialVideoUrl: string | null;
 };
 
 export function SeoSettingsForm({
@@ -114,6 +115,15 @@ export function SeoSettingsForm({
             value={form.twitterTitle ?? ''}
             onChange={(value) => update('twitterTitle', value)}
           />
+          <Field
+            label="How to Install YouTube video URL"
+            value={form.tutorialVideoUrl ?? ''}
+            onChange={(value) => update('tutorialVideoUrl', value)}
+          />
+          <p className="-mt-3 text-sm text-muted-foreground">
+            Add a YouTube watch URL. The Watch Tutorial button is currently
+            locked and will be enabled when the feature is ready.
+          </p>
           <div className="flex justify-end border-t pt-5">
             <Button type="submit" disabled={saving}>
               {saving ? 'Saving…' : 'Save SEO settings'}
