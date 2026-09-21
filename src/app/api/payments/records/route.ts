@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { desc, eq } from 'drizzle-orm';
 import { db } from '@/db';
-import { children, paymentRecords, subscriptions } from '@/db/schema';
+import { paymentRecords } from '@/db/schema';
 import { sendPaymentStatusEmail } from '@/lib/email';
 
 export async function GET(request: NextRequest) {
@@ -194,19 +194,6 @@ async function activateSubscription(input: {
   amount: string;
   discountAmount: string;
 }) {
-  const [child] = await db()
-    .select()
-    .from(children)
-    .where(eq(children.email, input.customerEmail.toLowerCase()))
-    .limit(1);
-  if (!child) {
-    console.warn(
-      '[subscription.activate] child not found',
-      input.customerEmail
-    );
-    return;
-  }
-
   const durationDays =
     input.planId === 'quarterly'
       ? 90
@@ -216,32 +203,6 @@ async function activateSubscription(input: {
           ? 360
           : 30;
   const now = new Date();
-  const [current] = await db()
-    .select()
-    .from(subscriptions)
-    .where(eq(subscriptions.childId, child.id))
-    .orderBy(desc(subscriptions.expiresAt))
-    .limit(1);
-  const startsAt = current && current.expiresAt > now ? current.expiresAt : now;
-  const expiresAt = new Date(startsAt);
-  expiresAt.setUTCDate(expiresAt.getUTCDate() + durationDays);
-
-  await db().transaction(async (tx) => {
-    await tx.insert(subscriptions).values({
-      childId: child.id,
-      packageName: input.packageName,
-      amount: input.amount,
-      discountAmount: input.discountAmount,
-      startsAt,
-      expiresAt,
-      status: 'active',
-    });
-    await tx
-      .update(children)
-      .set({ expireDate: expiresAt })
-      .where(eq(children.id, child.id));
-  });
-
   const externalBaseUrl = process.env.PARENT_CHILD_API_URL?.trim();
   const externalToken = process.env.PARENT_CHILD_API_TOKEN?.trim();
   if (!externalBaseUrl || !externalToken) {
@@ -250,6 +211,53 @@ async function activateSubscription(input: {
     );
     return;
   }
+
+  let child: { id: string; email: string; expireDate?: string | null } | null = null;
+  try {
+    const response = await fetch(
+      new URL('/api/admin/parent-child', externalBaseUrl),
+      {
+        headers: {
+          Accept: 'application/json',
+          Authorization: `Bearer ${externalToken}`,
+        },
+        cache: 'no-store',
+      }
+    );
+    if (response.ok) {
+      const payload = (await response.json()) as {
+        parents?: Array<{
+          children?: Array<{
+            id?: string;
+            email?: string;
+            expireDate?: string | null;
+          }>;
+        }>;
+      };
+      for (const parent of payload.parents ?? []) {
+        const match = (parent.children ?? []).find(
+          (candidate) =>
+            candidate.email?.trim().toLowerCase() === input.customerEmail
+        );
+        if (match?.id && match.email) {
+          child = match as { id: string; email: string; expireDate?: string | null };
+          break;
+        }
+      }
+    }
+  } catch (error) {
+    console.error('[subscription.activate] external child lookup failed', error);
+  }
+
+  if (!child) {
+    console.warn('[subscription.activate] external child not found', input.customerEmail);
+    return;
+  }
+
+  const currentExpiry = child.expireDate ? new Date(child.expireDate) : null;
+  const startsAt = currentExpiry && currentExpiry > now ? currentExpiry : now;
+  const expiresAt = new Date(startsAt);
+  expiresAt.setUTCDate(expiresAt.getUTCDate() + durationDays);
 
   try {
     const response = await fetch(

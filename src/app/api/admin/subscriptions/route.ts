@@ -38,10 +38,44 @@ export async function POST(request: NextRequest) {
   const [child] = await db()
     .select({ id: children.id })
     .from(children)
-    .where(eq(children.id, childId))
+    .where(eq(children.email, childId.toLowerCase()))
     .limit(1);
-  if (!child)
-    return NextResponse.json({ error: 'Child not found.' }, { status: 404 });
+  if (!child) {
+    const externalBaseUrl = process.env.PARENT_CHILD_API_URL?.trim();
+    const externalToken = process.env.PARENT_CHILD_API_TOKEN?.trim();
+    const planId = typeof value.planId === 'string' ? value.planId : '';
+    if (!externalBaseUrl || !externalToken || !childId.includes('@'))
+      return NextResponse.json({ error: 'Child not found.' }, { status: 404 });
+
+    try {
+      const listResponse = await fetch(new URL('/api/admin/parent-child', externalBaseUrl), {
+        headers: { Accept: 'application/json', Authorization: `Bearer ${externalToken}` },
+        cache: 'no-store',
+      });
+      const payload = (await listResponse.json()) as { parents?: Array<{ children?: Array<{ id?: string; email?: string; expireDate?: string | null }> }> };
+      const externalChild = (payload.parents ?? [])
+        .flatMap((parent) => parent.children ?? [])
+        .find((candidate) => candidate.email?.toLowerCase() === childId.toLowerCase());
+      if (!listResponse.ok || !externalChild?.id || !externalChild.email)
+        return NextResponse.json({ error: 'External child not found.' }, { status: 404 });
+
+      const durationDays = planId === 'quarterly' ? 90 : planId === 'half-yearly' ? 180 : planId === 'yearly' ? 360 : 30;
+      const now = new Date();
+      const currentExpiry = externalChild.expireDate ? new Date(externalChild.expireDate) : null;
+      const nextExpiry = currentExpiry && currentExpiry > now ? currentExpiry : now;
+      nextExpiry.setUTCDate(nextExpiry.getUTCDate() + durationDays);
+      const syncResponse = await fetch(new URL(`/api/child/${encodeURIComponent(externalChild.id)}/premium`, externalBaseUrl), {
+        method: 'PATCH',
+        headers: { Accept: 'application/json', 'Content-Type': 'application/json', Authorization: `Bearer ${externalToken}` },
+        body: JSON.stringify({ email: externalChild.email, expireDate: nextExpiry.toISOString() }),
+        cache: 'no-store',
+      });
+      if (!syncResponse.ok) return NextResponse.json({ error: 'Could not update external child expiry.' }, { status: 502 });
+      return NextResponse.json({ subscription: { packageName, amount, discountAmount, expiresAt: nextExpiry.toISOString(), status: 'active' } }, { status: 201 });
+    } catch {
+      return NextResponse.json({ error: 'External Parent/Child API is unavailable.' }, { status: 503 });
+    }
+  }
   const subscription = await db().transaction(async (tx) => {
     const [current] = await tx
       .select()
