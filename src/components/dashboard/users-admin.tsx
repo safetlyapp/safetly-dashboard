@@ -41,14 +41,20 @@ type FormState = {
   discountAmount: string;
   expiresAt: string;
 };
-const emptyForm = (childId = '', planId = ''): FormState => ({
-  childId,
-  planId,
-  packageName: '',
-  amount: '',
-  discountAmount: '0',
-  expiresAt: '',
-});
+const emptyForm = (childId = '', planId = '', plan?: Plan): FormState => {
+  const months = durationMonths(planId);
+  const total = plan ? priceAmount(plan.price) * months : 0;
+  const expiry = new Date();
+  expiry.setDate(expiry.getDate() + months * 30);
+  return {
+    childId,
+    planId,
+    packageName: plan?.name ?? '',
+    amount: plan ? (Math.round(total * 100) / 100).toFixed(2) : '',
+    discountAmount: '0',
+    expiresAt: plan ? localDateTime(expiry) : '',
+  };
+};
 function durationMonths(planId: string) {
   return planId === 'quarterly'
     ? 3
@@ -77,9 +83,9 @@ export function UsersAdmin({
   revenue: number;
 }) {
   const router = useRouter();
-  const manageableChildren = children.filter((child) => child.id);
+  const manageableChildren = children;
   const [form, setForm] = useState<FormState>(
-    emptyForm(manageableChildren[0]?.id, plans[0]?.planId)
+    emptyForm(manageableChildren[0]?.email, plans[0]?.planId, plans[0])
   );
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -103,9 +109,20 @@ export function UsersAdmin({
       current.children.push(child);
       grouped.set(key, current);
     }
-    return [...grouped.values()];
+    return [...grouped.values()]
+      .map((parent) => ({
+        ...parent,
+        children: [...parent.children].sort(
+          (a, b) => b.totalPaid - a.totalPaid
+        ),
+      }))
+      .sort(
+        (a, b) =>
+          b.children.reduce((total, child) => total + child.totalPaid, 0) -
+          a.children.reduce((total, child) => total + child.totalPaid, 0)
+      );
   }, [children]);
-  const parentPageSize = 5;
+  const parentPageSize = 10;
   const parentPageCount = Math.max(
     1,
     Math.ceil(parents.length / parentPageSize)
@@ -147,7 +164,7 @@ export function UsersAdmin({
       return;
     }
     setSuccess('Subscription added and child expiry date updated.');
-    setForm(emptyForm(manageableChildren[0]?.id, plans[0]?.planId));
+    setForm(emptyForm(manageableChildren[0]?.email, plans[0]?.planId, plans[0]));
     router.refresh();
     setSaving(false);
   }
@@ -198,11 +215,9 @@ export function UsersAdmin({
                   {children.map((child) => (
                     <option
                       key={child.email}
-                      value={child.id}
-                      disabled={!child.id}
+                      value={child.email}
                     >
                       {child.username} — {child.email}
-                      {!child.id ? ' (subscription link unavailable)' : ''}
                     </option>
                   ))}
                 </select>
@@ -229,7 +244,7 @@ export function UsersAdmin({
             <div className="flex justify-end border-t pt-5">
               <Button
                 type="submit"
-                disabled={saving || manageableChildren.length === 0}
+                disabled={saving || children.length === 0}
               >
                 {saving ? 'Saving subscription…' : 'Add subscription'}
               </Button>

@@ -13,6 +13,7 @@ import {
   Users,
   Receipt,
   SearchCheck,
+  Video,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { SignOutButton } from '@/components/auth/sign-out-button';
@@ -28,6 +29,7 @@ const navItems = [
   { href: '/dashboard/users', label: 'Users & subscriptions', icon: Users },
   { href: '/dashboard/payments', label: 'Payments', icon: Receipt },
   { href: '/dashboard/seo', label: 'SEO Settings', icon: SearchCheck },
+  { href: '/dashboard/video', label: 'Tutorial Video', icon: Video },
 ];
 
 const sectionMeta: Record<string, { title: string; description: string }> = {
@@ -62,6 +64,10 @@ const sectionMeta: Record<string, { title: string; description: string }> = {
   '/dashboard/seo': {
     title: 'SEO Settings',
     description: 'Manage public search and social metadata.',
+  },
+  '/dashboard/video': {
+    title: 'Tutorial Video',
+    description: 'Manage the public How to Install tutorial video.',
   },
 };
 
